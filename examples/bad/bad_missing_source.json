@@ -1,0 +1,13 @@
+{
+  "xinka_version": "0.1",
+  "claim": "这张卡故意缺少 source_url 字段，用于测试 R1（必填字段缺失）违规检测。",
+  "collected_at": "2026-10-01T11:00:00Z",
+  "trust_level": "pending",
+  "freshness_until": "2027-10-01T00:00:00Z",
+  "position": "test/invalid/missing-source",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [],
+    "checked_at": null
+  }
+}

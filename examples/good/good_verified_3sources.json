@@ -1,0 +1,18 @@
+{
+  "xinka_version": "0.1",
+  "claim": "地球赤道周长约 40,075 公里（24,901 英里），是地球最长的大圆；由于赤道隆起，其周长比两极经线周长约长 67 公里。",
+  "source_url": "https://education.nationalgeographic.org/resource/equator/",
+  "collected_at": "2026-10-01T10:00:00Z",
+  "trust_level": "verified",
+  "freshness_until": "2027-10-01T00:00:00Z",
+  "position": "science/geography/earth-circumference",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [
+      "https://education.nationalgeographic.org/resource/equator/",
+      "https://en.wikipedia.org/wiki/Earth%27s_circumference",
+      "https://www.universetoday.com/articles/circumference-of-the-earth"
+    ],
+    "checked_at": "2026-10-01T12:00:00Z"
+  }
+}

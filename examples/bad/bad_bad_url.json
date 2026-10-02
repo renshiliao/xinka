@@ -1,0 +1,14 @@
+{
+  "xinka_version": "0.1",
+  "claim": "这张卡的 source_url 写成了 not-a-url，不是以 http(s):// 开头的合法 URL，用于测试 R7 URL 格式违规。",
+  "source_url": "not-a-url",
+  "collected_at": "2026-10-01T11:40:00Z",
+  "trust_level": "pending",
+  "freshness_until": "2027-10-01T00:00:00Z",
+  "position": "test/invalid/bad-url",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [],
+    "checked_at": null
+  }
+}
