@@ -30,7 +30,9 @@
   .gold { background:#fffbe8; }
   .cta { text-align:center; padding:56px 24px; background:#302b63; color:#fff; }
   .cta h2 { color:#fff; }
-  .cta a { display:inline-block; margin-top:18px; padding:14px 36px; background:#6c63ff; color:#fff; border-radius:8px; text-decoration:none; font-size:1.05rem; }
+  .cta .btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:22px; }
+  .cta a { display:inline-block; padding:13px 28px; background:#6c63ff; color:#fff; border-radius:8px; text-decoration:none; font-size:.98rem; }
+  .cta a.ghost { background:transparent; border:1px solid #8b83d8; color:#cfc9ff; }
   footer { padding:28px 24px; text-align:center; font-size:.85rem; color:#999; }
   @media(max-width:640px){ .cards{grid-template-columns:1fr;} h1{font-size:2rem;} .cn{letter-spacing:4px;} }
 </style>
@@ -77,11 +79,18 @@
 <div class="cta">
   <h2>把「信任」做成 AI 时代的度量衡</h2>
   <p style="margin-top:10px;opacity:.85;">标准开源 · schema 与校验器免费 · 每一张卡都是一份可信承诺</p>
-  <a href="/whitepaper/">阅读 Xinka 白皮书（筹备中）</a>
+  <div class="btns">
+    <a href="/whitepaper/">📖 白皮书</a>
+    <a href="/validate.html">🔧 在线校验器</a>
+    <a href="/guestbook.html">💬 留言板</a>
+    <a class="ghost" href="https://github.com/renshiliao/xinka">⭐ GitHub</a>
+    <a class="ghost" href="mailto:hi@xinka.ai">✉ hi@xinka.ai</a>
+  </div>
+  <p style="margin-top:16px;opacity:.7;font-size:.88rem;">开源仓库 <a href="https://github.com/renshiliao/xinka" style="color:#cfc9ff">github.com/renshiliao/xinka</a> · schema 与校验器代码全公开</p>
 </div>
 
 <footer>
-  © 2026 Xinka Standard · 信卡 · Created by Ren Shiliao（任世燎）· xinka.ai
+  © 2026 Xinka Standard · 信卡 · Created by Ren Shiliao（任世燎）· xinka.ai · <a href="https://github.com/renshiliao/xinka" style="color:#cfc9ff">GitHub</a> · <a href="mailto:hi@xinka.ai" style="color:#cfc9ff">hi@xinka.ai</a>
 </footer>
 </body>
 </html>
