@@ -48,10 +48,22 @@ AI 什么都能答，但答案**不敢信、不敢引、不敢用**：引用怕�
 ## Roadmap · 路线
 
 - [x] 概念定义（六要素模型）
-- [ ] schema 规范（JSON Schema）
-- [ ] 免费校验器（CLI + Web）
-- [ ] 白皮书《Xinka: The Minimal Unit of Trustworthy Knowledge》
+- [x] 白皮书 v0.1（[中文版](whitepaper/XINKA_WHITEPAPER_ZH.md) · 在线版 [xinka.ai/whitepaper](https://xinka.ai/whitepaper/)）
+- [x] schema 规范（[`schema/xinka-0.1.schema.json`](schema/xinka-0.1.schema.json)）
+- [x] 免费校验器 CLI（[`tools/xinka_check.py`](tools/xinka_check.py)）
+- [ ] 校验器 Web 版
 - [ ] 参考实现与示例卡集
+
+## Validator · 校验器
+
+零依赖（Python 3.8+），开箱即用：
+
+```bash
+python3 tools/xinka_check.py --example     # 输出一张示例信卡
+python3 tools/xinka_check.py card.json     # 校验：通过 ✓ / 未过 ✗（R1-R7 七条规则）
+```
+
+七条规则：R1 六要素齐备 · R2 时间合法且采集早于保鲜期 · R3 置信两档 · R4 已验证须≥3 独立源 · R5 保鲜到期自动降级提示 · R6 校验时序 · R7 出处与坐标格式。
 
 ## Get Involved · 参与
 
