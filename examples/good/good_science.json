@@ -1,0 +1,18 @@
+{
+  "xinka_version": "0.1",
+  "claim": "在标准大气压（101.325 kPa）下，纯水的沸点约为 100 °C；海拔升高时气压降低，沸点随之下降（如珠峰峰顶约 71 °C）。",
+  "source_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Type=TBOIL",
+  "collected_at": "2026-10-01T10:30:00Z",
+  "trust_level": "verified",
+  "freshness_until": "2028-10-01T00:00:00Z",
+  "position": "science/chemistry/boiling-point",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [
+      "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Type=TBOIL",
+      "https://britannica.com/science/boiling-point",
+      "https://en.wikipedia.org/wiki/Boiling_point"
+    ],
+    "checked_at": "2026-10-01T12:30:00Z"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "xinka_version": "0.1",
+  "claim": "这张卡的 collected_at（2026-10-01）晚于 freshness_until（2025-10-01），时间顺序倒置，用于测试 R2。",
+  "source_url": "https://example.com/bad-time-order",
+  "collected_at": "2026-10-01T11:10:00Z",
+  "trust_level": "pending",
+  "freshness_until": "2025-10-01T00:00:00Z",
+  "position": "test/invalid/time-order",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [],
+    "checked_at": null
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "xinka_version": "0.1",
+  "claim": "这张卡声称 trust_level 为 verified，但 sources 只有 1 个，不满足 verified 必须至少 3 个互不相同来源的规则，用于测试 R4。",
+  "source_url": "https://example.com/bad-verified-1source",
+  "collected_at": "2026-10-01T11:30:00Z",
+  "trust_level": "verified",
+  "freshness_until": "2027-10-01T00:00:00Z",
+  "position": "test/invalid/verified-insufficient-sources",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [
+      "https://example.com/bad-verified-1source"
+    ],
+    "checked_at": "2026-10-01T12:30:00Z"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "xinka_version": "0.1",
+  "claim": "这张卡的 trust_level 写成了非法值 high（只允许 verified 或 pending 两档），用于测试 R3 枚举值违规。",
+  "source_url": "https://example.com/bad-trust-level",
+  "collected_at": "2026-10-01T11:20:00Z",
+  "trust_level": "high",
+  "freshness_until": "2027-10-01T00:00:00Z",
+  "position": "test/invalid/trust-level",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [
+      "https://example.com/bad-trust-level"
+    ],
+    "checked_at": "2026-10-01T12:20:00Z"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "xinka_version": "0.1",
+  "claim": "真空中的光速是一个精确值，等于 299,792,458 米每秒（m/s），自 1983 年起该定义值同时构成米的定义基础。",
+  "source_url": "https://physics.nist.gov/cuu/Constants/Value/c.html",
+  "collected_at": "2026-10-01T10:20:00Z",
+  "trust_level": "pending",
+  "freshness_until": "2028-10-01T00:00:00Z",
+  "position": "science/physics/speed-of-light",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [
+      "https://physics.nist.gov/cuu/Constants/Value/c.html"
+    ],
+    "checked_at": "2026-10-01T11:00:00Z"
+  }
+}
