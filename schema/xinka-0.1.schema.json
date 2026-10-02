@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://xinka.ai/schema/xinka-0.1.json",
+  "title": "Xinka Card",
+  "description": "Xinka（信卡）——可信知识的最小单元。六要素：源(Source)/采(Collected)/信(Trust)/鲜(Freshness)/位(Position)/证(Verified)。Xinka Specification Early Draft v0.1 · Created by Ren Shiliao (任世燎)",
+  "type": "object",
+  "required": ["xinka_version", "claim", "source_url", "collected_at", "trust_level", "freshness_until", "position", "verification"],
+  "additionalProperties": false,
+  "properties": {
+    "xinka_version": {
+      "type": "string",
+      "description": "信卡结构版本号（兼容性判定）",
+      "pattern": "^0\\.[0-9]+$"
+    },
+    "claim": {
+      "type": "string",
+      "description": "知识断言本体——不可再拆而保持语义完整的最小命题",
+      "minLength": 4,
+      "maxLength": 500
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "【源】原始出处 URL——无出处则任何引用不成立",
+      "pattern": "^https?://"
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "【采】采集时刻（RFC 3339）——同 URL 内容会变，不记采集时间则档案无法复现"
+    },
+    "trust_level": {
+      "type": "string",
+      "enum": ["verified", "pending"],
+      "description": "【信】置信度两档：verified=已验证（须三源互证）/ pending=待核验"
+    },
+    "freshness_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "【鲜】保鲜期截止（RFC 3339）——到期未复核自动降级 pending"
+    },
+    "position": {
+      "type": "string",
+      "description": "【位】知识树内坐标，层级用 / 分隔（如 ai/models/open-weights/mimo）",
+      "pattern": "^[a-z0-9\\-]+(/[a-z0-9\\-\\.]+)*$",
+      "maxLength": 200
+    },
+    "verification": {
+      "type": "object",
+      "description": "【证】三源互证记录——孤证不立",
+      "required": ["method", "sources", "checked_at"],
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "校验方法（如 three-source cross-check）"
+        },
+        "sources": {
+          "type": "array",
+          "description": "参与互证的独立来源 URL 列表；verified 档要求 ≥3 且互不相同",
+          "items": { "type": "string", "format": "uri" }
+        },
+        "checked_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "校验时刻；未校验时为 null"
+        }
+      }
+    }
+  }
+}
