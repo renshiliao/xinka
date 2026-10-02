@@ -68,7 +68,16 @@ python3 tools/xinka_check.py card.json     # 校验：通过 ✓ / 未过 ✗（
 ## Get Involved · 参与
 
 标准尚在早期草案（early draft），欢迎 issue 讨论。
-网站：[xinka.ai](https://xinka.ai)
+
+## Website · 官网
+
+🌐 [xinka.ai](https://xinka.ai) — 官网（阿里云 HK + Cloudflare）
+📖 [xinka.ai/whitepaper](https://xinka.ai/whitepaper/) — 白皮书 v0.1
+🔧 [xinka.ai/validate](https://xinka.ai/validate.html) — 在线校验器（纯前端）
+💬 [xinka.ai/guestbook](https://xinka.ai/guestbook.html) — 留言板
+✉ hi@xinka.ai — 联系邮箱
+
+服务端代码（留言板 API/管理端）见 [`server/`](server/)。
 
 ---
 
