@@ -13,6 +13,9 @@
   .wrap { max-width:900px; margin:0 auto; padding:40px 24px 80px; }
   h1 { font-size:1.75rem; color:#302b63; margin-bottom:6px; }
   .sub { color:#777; font-size:.92rem; margin-bottom:10px; }
+  .privacy-banner { background:#eef7f0; border:1px solid #bfe3c8; color:#1a7a3a;
+    padding:13px 18px; border-radius:10px; font-size:.92rem; margin:14px 0 6px; }
+  .btn-hint { font-size:.82rem; color:#999; margin-top:8px; }
   .tabs { display:flex; gap:8px; margin:24px 0 20px; }
   .tab { padding:10px 22px; border-radius:8px; cursor:pointer; border:1px solid #ddd; background:#fff; font-size:.95rem; }
   .tab.on { background:#302b63; color:#fff; border-color:#302b63; }
@@ -50,7 +53,9 @@
 <div class="top"><a href="/">← xinka.ai 首页</a> &nbsp;·&nbsp; 免费校验器</div>
 <div class="wrap">
   <h1>🔧 Xinka 校验器 Web 版</h1>
-  <p class="sub">免费、零门槛、纯前端——您的信卡数据不会离开浏览器。与 CLI 版 <code>tools/xinka_check.py</code> 同一套 R1-R7 规则。</p>
+  <p class="sub">免费、零门槛——与 CLI 版 <code>tools/xinka_check.py</code> 同一套 R1-R7 规则。</p>
+
+  <div class="privacy-banner">🔒 我们不采集您的数据——校验与生成全部在您的浏览器内本地完成，零上传、零记录、零 Cookie。</div>
 
   <div class="tabs">
     <div class="tab on" onclick="sw(0)">校验信卡</div>
@@ -66,6 +71,7 @@
       <button class="sec" onclick="loadExample()">载入示例</button>
       <button class="sec" onclick="document.getElementById('input').value=''; document.getElementById('result').innerHTML=''">清空</button>
     </div>
+    <p class="btn-hint">校验过程不联网——您的数据不离开此页。</p>
     <div class="result" id="result"></div>
   </div>
 
@@ -108,6 +114,7 @@
     <div class="row">
       <button onclick="generate()">⚙ 生成信卡 JSON</button>
     </div>
+    <p class="btn-hint">生成的信卡只存在于您的浏览器——复制带走即归您，我们不留存任何副本。</p>
     <div class="result" id="genResult"></div>
   </div>
 
