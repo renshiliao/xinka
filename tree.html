@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>世界之树 · 可信知识的生长之地</title>
+<meta name="description" content="世界之树（World Tree）——基于 Xinka 信卡标准的可信知识库。每条知识带户口本：源、采、信、鲜、位、证。">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; color:#1a1a2e; background:#fafafa; line-height:1.85; }
+  .top { background:#24243e; color:#fff; padding:18px 24px; }
+  .top a { color:#cfc9ff; text-decoration:none; }
+  .hero { background:linear-gradient(135deg,#1a3a2a,#2d5a3f,#244a36); color:#fff; padding:72px 0 60px; text-align:center; }
+  .hero h1 { font-size:2.5rem; letter-spacing:2px; margin-bottom:8px; }
+  .hero .en { font-size:1.05rem; opacity:.75; font-style:italic; }
+  .hero .tagline { font-size:1.25rem; margin-top:22px; opacity:.92; }
+  .status-badge { display:inline-block; margin-top:20px; padding:8px 22px; border:1px solid rgba(255,255,255,.4);
+    border-radius:20px; font-size:.92rem; opacity:.9; }
+  .wrap { max-width:860px; margin:0 auto; padding:0 24px; }
+  section { padding:52px 0; }
+  h2 { font-size:1.6rem; margin-bottom:18px; color:#2d5a3f; }
+  p { margin:14px 0; }
+  .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:26px; }
+  .card { background:#fff; border:1px solid #e2e8e4; border-radius:12px; padding:22px; box-shadow:0 2px 12px rgba(45,90,63,.06); }
+  .card h3 { font-size:1.02rem; color:#2d5a3f; margin-bottom:8px; }
+  .card .mark { font-size:1.55rem; font-weight:700; color:#3d7a55; }
+  .card p { font-size:.9rem; color:#555; margin:6px 0 0; }
+  .stats { display:flex; gap:16px; margin-top:26px; flex-wrap:wrap; }
+  .stat { flex:1; min-width:150px; background:#fff; border:1px solid #e2e8e4; border-radius:12px; padding:22px; text-align:center; }
+  .stat .num { font-size:2rem; font-weight:700; color:#2d5a3f; }
+  .stat .lbl { font-size:.86rem; color:#777; margin-top:4px; }
+  .promise { background:#f2f7f3; border-left:4px solid #3d7a55; padding:22px 26px; border-radius:8px; margin:22px 0; }
+  .timeline { margin-top:22px; }
+  .tl-item { display:flex; gap:18px; margin-bottom:18px; }
+  .tl-dot { width:14px; height:14px; border-radius:50%; background:#3d7a55; margin-top:8px; flex-shrink:0; }
+  .tl-dot.future { background:#ccc; }
+  .tl-body h4 { font-size:1rem; color:#2d5a3f; }
+  .tl-body p { font-size:.92rem; color:#666; margin:3px 0 0; }
+  .cta { text-align:center; padding:56px 24px; background:#24243e; color:#fff; }
+  .cta h2 { color:#fff; }
+  .cta .btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:22px; }
+  .cta a { display:inline-block; padding:13px 28px; background:#3d7a55; color:#fff; border-radius:8px; text-decoration:none; font-size:.98rem; }
+  .cta a.ghost { background:transparent; border:1px solid #7a86c9; color:#cfc9ff; }
+  footer { padding:28px 24px; text-align:center; font-size:.85rem; color:#999; }
+  footer a { color:#6c63ff; }
+  @media(max-width:640px){ .cards{grid-template-columns:1fr;} .hero h1{font-size:1.9rem;} }
+</style>
+</head>
+<body>
+<div class="top"><a href="/">← xinka.ai 首页</a> &nbsp;·&nbsp; 世界之树</div>
+
+<div class="hero">
+  <div class="wrap">
+    <h1>🌳 世界之树</h1>
+    <div class="en">World Tree — A Living Knowledge Tree Built on Trust</div>
+    <div class="tagline">不是更多的答案，是<b>每条答案都值得信</b>。</div>
+    <div class="status-badge">🚧 预览版 · 正式开放查询筹备中</div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>自我介绍：世界之树是什么</h2>
+    <p>世界之树是一棵<b>正在生长的可信知识树</b>。它不生产观点，也不追逐热点——它做的事只有一件：<b>把经过核实的知识，以可追溯的方式组织起来</b>。</p>
+    <p>在 AI 什么都能答的时代，真正稀缺的不是答案，而是<b>敢信的答案</b>。世界之树的每一条知识都携带自己的「户口本」——我们称之为 <a href="/whitepaper/">Xinka 信卡</a>，由创立者任世燎（Ren Shiliao）定义的可信知识最小单元。</p>
+
+    <div class="promise">
+      <b>我们的三条承诺：</b><br>
+      ① <b>不编造</b>——每条知识标注真实来源，找不到来源就明说「待核验」，绝不粉饰；<br>
+      ② <b>不藏短</b>——口径冲突如实标注（⚠️ 标记），不强行统一、不装作已验证；<br>
+      ③ <b>不欺生</b>——置信度明码标价，「已验证」与「待核验」分开陈列，您看到什么就是什么。
+    </div>
+  </div>
+</section>
+
+<section style="background:#fff">
+  <div class="wrap">
+    <h2>为什么可信：六要素的户口本</h2>
+    <p>每条知识都是一张<b>信卡</b>——六个字段缺一不可，构成它的完整身份：</p>
+    <div class="cards">
+      <div class="card"><div class="mark">【源】</div><h3>Source · 从哪来</h3><p>原始出处 URL，可点可查可回溯。</p></div>
+      <div class="card"><div class="mark">【采】</div><h3>Collected · 何时采</h3><p>采集时间明标，时效一眼可判。</p></div>
+      <div class="card"><div class="mark">【信】</div><h3>Trust · 多可信</h3><p>已验证 / 待核验，置信度不打折。</p></div>
+      <div class="card"><div class="mark">【鲜】</div><h3>Freshness · 保鲜期</h3><p>知识有保质期，到期自动降级待复核。</p></div>
+      <div class="card"><div class="mark">【位】</div><h3>Position · 藏在哪</h3><p>树内坐标可查，知识成体系不成孤岛。</p></div>
+      <div class="card"><div class="mark">【证】</div><h3>Verified · 怎么证</h3><p>三源互证，孤证不立。</p></div>
+    </div>
+    <p style="margin-top:18px">标准全文与校验工具：<a href="/whitepaper/">白皮书 v0.1</a> · <a href="/validate.html">在线校验器</a>（免费、纯本地、不采集数据）。</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>现在长到哪了</h2>
+    <p>诚实地说：世界之树还在幼苗期。以下是我们此刻的真实家底——<b>不夸大，不缩小</b>：</p>
+    <div class="stats">
+      <div class="stat"><div class="num">127</div><div class="lbl">知识节点</div></div>
+      <div class="stat"><div class="num">45+</div><div class="lbl">已挂来源标记</div></div>
+      <div class="stat"><div class="num">16</div><div class="lbl">三源互证升档</div></div>
+      <div class="stat"><div class="num">14</div><div class="lbl">枝干分类</div></div>
+    </div>
+    <p style="margin-top:16px;font-size:.92rem;color:#777">每一格数字都可查证——这是我们对「可信」二字的自我要求：连对自己的介绍，也要带户口本。</p>
+  </div>
+</section>
+
+<section style="background:#fff">
+  <div class="wrap">
+    <h2>生长计划</h2>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-body">
+        <h4>✅ 现在：扎根（标准先行）</h4>
+        <p>信卡标准、校验器、示例卡集已开源——先把「可信」的尺子立起来，再谈查询。</p>
+      </div></div>
+      <div class="tl-item"><div class="tl-dot future"></div><div class="tl-body">
+        <h4>⏳ 近期：抽枝（知识扩容）</h4>
+        <p>持续补录来源、升档验证——覆盖率过半后，开放公开查询入口。</p>
+      </div></div>
+      <div class="tl-item"><div class="tl-dot future"></div><div class="tl-body">
+        <h4>🌱 将来：成荫（开放查询）</h4>
+        <p>面向所有人开放查询：答案带出处、带置信度、带保鲜期——问得到，更信得过。</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta">
+  <h2>先认识，再查询</h2>
+  <p style="margin-top:10px;opacity:.85;">正式开放前，欢迎通过以下方式了解我们</p>
+  <div class="btns">
+    <a href="/whitepaper/">📖 阅读白皮书</a>
+    <a href="/validate.html">🔧 试试校验器</a>
+    <a class="ghost" href="/guestbook.html">💬 留言</a>
+    <a class="ghost" href="mailto:hi@xinka.ai">✉ hi@xinka.ai</a>
+    <a class="ghost" href="https://github.com/renshiliao/xinka">⭐ GitHub</a>
+  </div>
+</div>
+
+<footer>
+  世界之树 · 基于 <a href="/whitepaper/">Xinka 信卡标准</a> · <a href="/">xinka.ai</a> · Created by <b>Ren Shiliao（任世燎）</b><br>
+  © 2026 World Tree Project · 本页数据截止 2026-10 · 正式版开放时间另行公告
+</footer>
+</body>
+</html>
