@@ -3,95 +3,220 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xinka 信卡 — 可信知识的最小单元</title>
-<meta name="description" content="Xinka（信卡）：AI 时代可信知识的最小单元标准。每条答案带户口本——源、采、信、鲜、位、证，六要素可验可信可溯。">
+<title>Xinka 标准 — 可信知识的记录规范</title>
+<meta name="description" content="Xinka（信卡）：一套开源的可信知识记录规范。不是产品，不是实物卡片——它规定可信的结论该如何记录、如何核验、何时过期。schema 与校验器免费。">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; color:#1a1a2e; background:#fafafa; line-height:1.7; }
-  .wrap { max-width:860px; margin:0 auto; padding:0 24px; }
-  header { background:linear-gradient(135deg,#0f0c29,#302b63,#24243e); color:#fff; padding:72px 0 56px; }
-  h1 { font-size:2.6rem; letter-spacing:1px; margin-bottom:8px; }
-  .cn { font-size:1.3rem; opacity:.85; letter-spacing:8px; }
-  .tagline { font-size:1.15rem; margin-top:24px; opacity:.92; }
-  .en { font-size:.95rem; opacity:.65; margin-top:6px; font-style:italic; }
-  section { padding:52px 0; }
-  h2 { font-size:1.55rem; margin-bottom:20px; color:#302b63; }
-  .pain { background:#fff; }
-  .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:28px; }
-  .card { background:#fff; border:1px solid #e8e8f0; border-radius:12px; padding:22px; box-shadow:0 2px 12px rgba(48,43,99,.06); }
-  .card h3 { font-size:1.05rem; color:#302b63; margin-bottom:8px; }
-  .card .mark { font-size:1.6rem; font-weight:700; color:#6c63ff; }
-  .card p { font-size:.92rem; color:#555; }
-  .compare { background:#f4f2ff; }
-  table { width:100%; border-collapse:collapse; margin-top:16px; background:#fff; border-radius:10px; overflow:hidden; }
-  th,td { padding:13px 16px; text-align:left; border-bottom:1px solid #eee; font-size:.93rem; }
-  th { background:#302b63; color:#fff; font-weight:600; }
-  tr:last-child td { border-bottom:none; }
-  .gold { background:#fffbe8; }
-  .cta { text-align:center; padding:56px 24px; background:#302b63; color:#fff; }
-  .cta h2 { color:#fff; }
-  .cta .btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:22px; }
-  .cta a { display:inline-block; padding:13px 28px; background:#6c63ff; color:#fff; border-radius:8px; text-decoration:none; font-size:.98rem; }
-  .cta a.ghost { background:transparent; border:1px solid #8b83d8; color:#cfc9ff; }
-  footer { padding:28px 24px; text-align:center; font-size:.85rem; color:#999; }
-  @media(max-width:640px){ .cards{grid-template-columns:1fr;} h1{font-size:2rem;} .cn{letter-spacing:4px;} }
+  :root {
+    --ink:#1a1a2e; --dim:#555; --line:#e2e2ea; --paper:#ffffff; --wash:#fafafa;
+    --acc:#302b63; --gold:#8a6d1f; --gold-bg:#fdf9ec;
+    --serif:"Noto Serif SC","Songti SC","SimSun",Georgia,serif;
+    --sans:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  body { font-family:var(--sans); color:var(--ink); background:var(--paper); line-height:1.75; font-size:16px; }
+  .wrap { max-width:720px; margin:0 auto; padding:0 24px; }
+
+  /* 版本条——标准文本的身份 */
+  .verbar { border-bottom:1px solid var(--line); background:var(--wash); }
+  .verbar .wrap { display:flex; justify-content:space-between; align-items:center; padding:10px 24px; font-size:.8rem; color:var(--dim); letter-spacing:.5px; flex-wrap:wrap; gap:8px; }
+  .verbar b { color:var(--acc); font-weight:600; letter-spacing:1px; }
+  .verbar a { color:var(--dim); text-decoration:none; border-bottom:1px dotted var(--line); }
+  .verbar a:hover { color:var(--acc); }
+
+  /* 首屏——衬线巨题 */
+  header { padding:88px 0 64px; border-bottom:1px solid var(--line); }
+  .kicker { font-size:.85rem; letter-spacing:3px; color:var(--gold); margin-bottom:24px; }
+  h1 { font-family:var(--serif); font-size:3.2rem; line-height:1.25; font-weight:700; color:var(--acc); letter-spacing:2px; }
+  .lede { margin-top:28px; font-size:1.15rem; color:var(--ink); max-width:34em; }
+  .lede strong { color:var(--acc); }
+  .en { margin-top:12px; font-size:.92rem; color:var(--dim); font-style:italic; }
+  .hero-btns { margin-top:36px; display:flex; gap:12px; flex-wrap:wrap; }
+  .btn { display:inline-block; padding:12px 26px; border:1px solid var(--acc); border-radius:4px; text-decoration:none; font-size:.95rem; transition:all .15s; }
+  .btn.primary { background:var(--acc); color:#fff; }
+  .btn.primary:hover { background:#241f4d; }
+  .btn.ghost { color:var(--acc); background:transparent; }
+  .btn.ghost:hover { background:var(--wash); }
+
+  /* 章节——文档式 */
+  section { padding:56px 0; border-bottom:1px solid var(--line); }
+  .secnum { font-size:.8rem; letter-spacing:2px; color:var(--dim); margin-bottom:8px; }
+  h2 { font-family:var(--serif); font-size:1.65rem; color:var(--acc); font-weight:700; margin-bottom:20px; letter-spacing:1px; }
+  p { margin:12px 0; color:var(--ink); }
+  p.dim { color:var(--dim); font-size:.95rem; }
+
+  /* 是/不是——规格双栏 */
+  .isnot { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-top:24px; }
+  .isnot > div { padding:24px; }
+  .isnot .is { background:var(--paper); border-right:1px solid var(--line); }
+  .isnot .isnot2 { background:var(--wash); }
+  .isnot h3 { font-size:.95rem; letter-spacing:2px; margin-bottom:14px; font-weight:600; }
+  .isnot .is h3 { color:var(--acc); }
+  .isnot .isnot2 h3 { color:var(--gold); }
+  .isnot li { margin:10px 0 10px 18px; font-size:.93rem; }
+  .isnot .isnot2 li { color:var(--dim); }
+
+  /* 六要素——规格表（去卡片化） */
+  table { width:100%; border-collapse:collapse; margin-top:24px; font-size:.93rem; }
+  th,td { padding:12px 14px; text-align:left; border:1px solid var(--line); vertical-align:top; }
+  th { background:var(--wash); font-weight:600; color:var(--acc); font-size:.85rem; letter-spacing:1px; }
+  td:first-child { font-family:var(--serif); font-weight:700; color:var(--acc); white-space:nowrap; }
+  td code { font-size:.85rem; background:var(--wash); padding:1px 6px; border:1px solid var(--line); border-radius:3px; }
+
+  /* 规则清单 */
+  .rules { margin-top:20px; border-top:1px solid var(--line); }
+  .rule { display:flex; gap:14px; padding:12px 4px; border-bottom:1px solid var(--line); font-size:.92rem; align-items:baseline; }
+  .rule .rid { font-family:var(--serif); font-weight:700; color:var(--acc); min-width:3.2em; }
+  .rule .rdesc { color:var(--ink); }
+  .rule .rdesc b { color:var(--gold); font-weight:600; }
+
+  /* 对比 */
+  .compare td.gold { background:var(--gold-bg); color:#6b5518; }
+
+  /* 引言块 */
+  blockquote { border-left:3px solid var(--acc); padding:8px 24px; margin:28px 0; font-family:var(--serif); font-size:1.12rem; color:var(--acc); }
+
+  /* CTA */
+  .cta { padding:56px 0; }
+  .cta h2 { text-align:left; }
+  .cta .btns { display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; }
+
+  footer { border-top:1px solid var(--line); background:var(--wash); padding:28px 24px; text-align:center; font-size:.82rem; color:var(--dim); }
+  footer a { color:var(--acc); text-decoration:none; border-bottom:1px dotted var(--line); }
+
+  @media(max-width:640px){
+    h1 { font-size:2.15rem; letter-spacing:1px; }
+    header { padding:56px 0 40px; }
+    .isnot { grid-template-columns:1fr; }
+    .isnot .is { border-right:none; border-bottom:1px solid var(--line); }
+    table { font-size:.86rem; }
+    th,td { padding:9px 10px; }
+  }
 </style>
 </head>
 <body>
+
+<div class="verbar">
+  <div class="wrap">
+    <span><b>XINKA</b>&nbsp; 标准文本 · Early Draft v0.2 · 更新 2026-10-03</span>
+    <span><a href="/whitepaper/">白皮书</a> · <a href="https://github.com/renshiliao/xinka">规范仓库</a> · <a href="/integrate.html">接入</a></span>
+  </div>
+</div>
+
 <header>
   <div class="wrap">
-    <h1>Xinka</h1>
-    <div class="cn">信 卡</div>
-    <div class="tagline">问得到，更信得过——每条答案带户口本。</div>
-    <div class="en">Xinka: The Minimal Unit of Trustworthy Knowledge</div>
+    <div class="kicker">可信知识的记录规范 · 开源</div>
+    <h1>信卡不是卡。<br>它是一套标准。</h1>
+    <p class="lede">Xinka 规定<strong>可信的结论该如何记录、如何核验、何时过期</strong>。它不是产品，不是实物卡片——是一份写在 schema 里、执行在校验器里的公开规程。谁都可以免费查、免费用、免费验。</p>
+    <p class="en">Xinka: The Minimal Unit of Trustworthy Knowledge — a standard, not a product.</p>
+    <div class="hero-btns">
+      <a class="btn primary" href="/whitepaper/">阅读白皮书</a>
+      <a class="btn ghost" href="/validate.html">试用校验器</a>
+      <a class="btn ghost" href="/integrate.html">接入标准</a>
+    </div>
   </div>
 </header>
 
-<section class="pain">
+<section>
   <div class="wrap">
-    <h2>AI 时代最大的痛：答案很多，敢信的很少</h2>
+    <div class="secnum">§ 1 · 问题</div>
+    <h2>AI 说的话，凭什么敢信？</h2>
     <p>大模型什么都答得出来——但引用怕编造、数据怕幻觉、决策怕翻车。答案说得头头是道，却<strong>不敢信、不敢引、不敢用</strong>。</p>
-    <p style="margin-top:14px;">Xinka 标准给出解法：<strong>每条答案带户口本</strong>——从哪来、何时采、多可信、何时复核、藏在哪、怎么证的，六要素齐全。不是更会说，是<strong>说了不算瞎说</strong>。</p>
-    <div class="cards">
-      <div class="card"><div class="mark">【源】</div><h3>Source · 从哪来</h3><p>每个结论挂原始出处 URL，可点、可查、可回溯。</p></div>
-      <div class="card"><div class="mark">【采】</div><h3>Collected · 何时采</h3><p>采集时间明标，时效一眼可判。</p></div>
-      <div class="card"><div class="mark">【信】</div><h3>Trust · 多可信</h3><p>已验证 / 待核验，置信度明码实价。</p></div>
-      <div class="card"><div class="mark">【鲜】</div><h3>Freshness · 保鲜期</h3><p>知识也有保质期，到期提醒复核。</p></div>
-      <div class="card"><div class="mark">【位】</div><h3>Position · 藏在哪</h3><p>树内坐标可查，知识成体系不成孤岛。</p></div>
-      <div class="card"><div class="mark">【证】</div><h3>Verified · 怎么证</h3><p>三源互证，孤证不立。</p></div>
-    </div>
+    <p>症结不在模型会不会说，而在结论<strong>无凭无据</strong>：不知从哪来、不知何时采、不知多可信、不知何时过期。Xinka 给每条结论一份规范档案——六要素，一个不少。</p>
+    <table>
+      <tr><th>要素</th><th>字段</th><th>记什么</th><th>怎么核</th></tr>
+      <tr><td>【源】</td><td><code>source_url</code></td><td>原始出处，可点可查可回溯</td><td>R7 出处格式 · R8 独立性 · R9 源分级</td></tr>
+      <tr><td>【采】</td><td><code>collected_at</code></td><td>采集时刻——同一页会变，不记时间不可复现</td><td>R2 时序合法</td></tr>
+      <tr><td>【信】</td><td><code>trust_level</code></td><td>两档置信：已验证 / 待核验</td><td>R3 两档制 · R4 三源互证</td></tr>
+      <tr><td>【鲜】</td><td><code>freshness_until</code></td><td>保鲜期——到期自动降级，徽章不永久</td><td>R5 到期降级</td></tr>
+      <tr><td>【位】</td><td><code>position</code></td><td>知识树坐标，成体系不成孤岛</td><td>R7 坐标格式</td></tr>
+      <tr><td>【证】</td><td><code>verification</code></td><td>互证记录：方法、参与来源、校验时刻</td><td>R6 校验时序 · R10 引文绑定</td></tr>
+    </table>
   </div>
 </section>
 
-<section class="compare">
+<section>
   <div class="wrap">
+    <div class="secnum">§ 2 · 定位</div>
+    <h2>是什么，不是什么</h2>
+    <p class="dim">一个方法、一份标准，就该把边界说在前面。</p>
+    <div class="isnot">
+      <div class="is">
+        <h3>XINKA 是</h3>
+        <ul>
+          <li>一套开源<strong>记录规范</strong>（JSON schema，v0.2）</li>
+          <li>一套免费<strong>校验器</strong>（十条规则，机器可查）</li>
+          <li>一种<strong>置信度口径</strong>（两档起步，宁低勿高）</li>
+          <li>一份可被任何 AI、任何系统<strong>复用的规程</strong></li>
+        </ul>
+      </div>
+      <div class="isnot2">
+        <h3>XINKA 不是</h3>
+        <ul>
+          <li>不是产品，不是实物卡片——不卖盒子，不卖会员</li>
+          <li>不承诺「永远正确」——三源同错也会照实记录</li>
+          <li>不是核查公司——标准与工具全部公开，谁都能验</li>
+          <li>不采集您的数据——校验在本地/浏览器内完成</li>
+        </ul>
+      </div>
+    </div>
+    <blockquote>它的承诺是更弱也更诚实的一种：<strong>错了，查得清，追得回。</strong></blockquote>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="secnum">§ 3 · 规程</div>
+    <h2>六要素，十条规则，三个独立来源</h2>
+    <p>「已验证」不是一个说法，是一组机器可查的条件：六要素齐备、时间合法、三源互证、引文逐字绑定、正文指纹入档——<strong>编造的引用过不了关，改过的来源查得出指纹</strong>。</p>
+    <div class="rules">
+      <div class="rule"><span class="rid">R1</span><span class="rdesc">六要素必填齐备</span></div>
+      <div class="rule"><span class="rid">R2</span><span class="rdesc">时间合法，采集早于保鲜期</span></div>
+      <div class="rule"><span class="rid">R3</span><span class="rdesc">置信仅两档，宁低勿高</span></div>
+      <div class="rule"><span class="rid">R4</span><span class="rdesc">已验证须 ≥3 个<b>互不相同</b>的来源</span></div>
+      <div class="rule"><span class="rid">R5</span><span class="rdesc">保鲜到期自动降级</span></div>
+      <div class="rule"><span class="rid">R6</span><span class="rdesc">校验时序合法</span></div>
+      <div class="rule"><span class="rid">R7</span><span class="rdesc">出处与坐标格式合法</span></div>
+      <div class="rule"><span class="rid">R8</span><span class="rdesc">独立性：<b>三源同域名=转载互抄</b>，拦下</span></div>
+      <div class="rule"><span class="rid">R9</span><span class="rdesc">源分级：已验证须含 ≥1 <b>一手来源</b></span></div>
+      <div class="rule"><span class="rid">R10</span><span class="rdesc">引文绑定：逐字引文 + <b>SHA-256 正文指纹</b></span></div>
+    </div>
+    <p class="dim" style="margin-top:18px;">复检命令随时可跑：重新抓取来源、比对指纹——源改稿现形，引文蒸发即降级。规则全文与参考实现在 <a href="https://github.com/renshiliao/xinka">GitHub</a>，在线校验在 <a href="/validate.html">validate.html</a>。</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="secnum">§ 4 · 对照</div>
     <h2>别人给答案，我们给敢签字的答案</h2>
-    <table>
+    <table class="compare">
       <tr><th>对比</th><th>他们给</th><th>Xinka 给</th></tr>
       <tr><td>大厂 AI 聊天</td><td>快、全、流畅</td><td class="gold">可验、可信、可溯</td></tr>
       <tr><td>搜索引擎</td><td>链接一堆自己挑</td><td class="gold">已核验的结论 + 出处</td></tr>
       <tr><td>百科 / 问答社区</td><td>人多说法杂</td><td class="gold">三源互证 + 置信度明标</td></tr>
     </table>
-    <p style="margin-top:18px;">护城河：抄袭者抄得走界面，<strong>抄不走为每条答案背的书</strong>。</p>
+    <p>护城河：抄袭者抄得走界面，<strong>抄不走为每条答案背的书</strong>。</p>
   </div>
 </section>
 
 <div class="cta">
-  <h2>把「信任」做成 AI 时代的度量衡</h2>
-  <p style="margin-top:10px;opacity:.85;">标准开源 · schema 与校验器免费 · 每一张卡都是一份可信承诺</p>
-  <div class="btns">
-    <a href="/whitepaper/">📖 白皮书</a>
-    <a href="/validate.html">🔧 在线校验器</a>
-    <a href="/integrate.html">🔌 接入标准</a>
-    <a href="/guestbook.html">💬 留言板</a>
-    <a class="ghost" href="https://github.com/renshiliao/xinka">⭐ GitHub</a>
-    <a class="ghost" href="mailto:hi@xinka.ai">✉ hi@xinka.ai</a>
+  <div class="wrap">
+    <div class="secnum">§ 5 · 参与</div>
+    <h2>把「信任」做成 AI 时代的度量衡</h2>
+    <p class="dim">标准开源 · schema 与校验器免费 · 不采集您的数据</p>
+    <div class="btns">
+      <a class="btn primary" href="/integrate.html">接入标准</a>
+      <a class="btn ghost" href="/whitepaper/">📖 白皮书</a>
+      <a class="btn ghost" href="/validate.html">🔧 在线校验器</a>
+      <a class="btn ghost" href="/guestbook.html">💬 留言板</a>
+      <a class="btn ghost" href="https://github.com/renshiliao/xinka">⭐ GitHub</a>
+      <a class="btn ghost" href="mailto:hi@xinka.ai">✉ hi@xinka.ai</a>
+    </div>
   </div>
-  <p style="margin-top:16px;opacity:.7;font-size:.88rem;">开源仓库 <a href="https://github.com/renshiliao/xinka" style="color:#cfc9ff">github.com/renshiliao/xinka</a> · schema 与校验器代码全公开</p>
 </div>
 
 <footer>
-  © 2026 Xinka Standard · 信卡 · Created by Ren Shiliao（任世燎）· xinka.ai · <a href="https://github.com/renshiliao/xinka" style="color:#cfc9ff">GitHub</a> · <a href="mailto:hi@xinka.ai" style="color:#cfc9ff">hi@xinka.ai</a>
+  © 2026 Xinka Standard · 信卡 · Created by <strong>Ren Shiliao（任世燎）</strong> · <a href="https://xinka.ai">xinka.ai</a> · <a href="https://github.com/renshiliao/xinka">GitHub</a> · <a href="mailto:hi@xinka.ai">hi@xinka.ai</a><br>
+  本页为纯静态页面，不采集任何数据——复制带走即归您，我们不留存任何副本。
 </footer>
 </body>
 </html>
