@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>谁在用 Xinka — 适用人群与使用指南</title>
+<meta name="description" content="谁的话需要被信任，谁就需要信卡。学生、医生、文员、律师、媒体、金融、设计师、AI 从业者——九类人群的信卡标准使用方式。">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --ink:#1a1a2e; --dim:#555; --line:#e2e2ea; --paper:#ffffff; --wash:#fafafa;
+    --acc:#302b63; --gold:#8a6d1f; --gold-bg:#fdf9ec;
+    --serif:"Noto Serif SC","Songti SC","SimSun",Georgia,serif;
+    --sans:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  body { font-family:var(--sans); color:var(--ink); background:var(--paper); line-height:1.75; font-size:16px; }
+  .wrap { max-width:860px; margin:0 auto; padding:0 24px; }
+
+  .verbar { border-bottom:1px solid var(--line); background:var(--wash); }
+  .verbar .wrap { display:flex; justify-content:space-between; align-items:center; padding:10px 24px; font-size:.8rem; color:var(--dim); letter-spacing:.5px; flex-wrap:wrap; gap:8px; }
+  .verbar b { color:var(--acc); font-weight:600; letter-spacing:1px; }
+  .verbar a { color:var(--dim); text-decoration:none; border-bottom:1px dotted var(--line); }
+  .verbar a:hover { color:var(--acc); }
+
+  header { padding:72px 0 48px; border-bottom:1px solid var(--line); }
+  .kicker { font-size:.85rem; letter-spacing:3px; color:var(--gold); margin-bottom:20px; }
+  h1 { font-family:var(--serif); font-size:2.7rem; line-height:1.3; font-weight:700; color:var(--acc); letter-spacing:2px; }
+  .lede { margin-top:24px; font-size:1.12rem; max-width:36em; }
+  .lede strong { color:var(--acc); }
+
+  section { padding:48px 0; border-bottom:1px solid var(--line); }
+  .secnum { font-size:.8rem; letter-spacing:2px; color:var(--dim); margin-bottom:8px; }
+  h2 { font-family:var(--serif); font-size:1.5rem; color:var(--acc); font-weight:700; margin-bottom:16px; letter-spacing:1px; }
+  p.dim { color:var(--dim); font-size:.95rem; }
+
+  /* 人群条目——规格化 */
+  .persona { display:grid; grid-template-columns:150px 1fr; gap:0; border:1px solid var(--line); border-radius:6px; margin:16px 0; overflow:hidden; }
+  .persona .who { background:var(--wash); padding:20px; border-right:1px solid var(--line); }
+  .persona .who .icon { font-size:1.5rem; margin-bottom:6px; }
+  .persona .who .name { font-family:var(--serif); font-weight:700; color:var(--acc); font-size:1.05rem; }
+  .persona .body { padding:18px 22px; }
+  .persona .body .row { margin:6px 0; font-size:.92rem; }
+  .persona .body .tag { display:inline-block; font-size:.75rem; letter-spacing:1px; color:var(--dim); border:1px solid var(--line); border-radius:3px; padding:0 8px; margin-right:8px; vertical-align:1px; }
+  .persona .body .one { margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); font-family:var(--serif); color:var(--gold); font-size:.98rem; }
+
+  /* 三步 */
+  .steps { counter-reset:step; margin-top:20px; }
+  .step { display:flex; gap:18px; padding:16px 4px; border-bottom:1px solid var(--line); align-items:baseline; }
+  .step::before { counter-increment:step; content:counter(step,decimal-leading-zero); font-family:var(--serif); font-size:1.3rem; font-weight:700; color:var(--acc); min-width:2.2em; }
+  .step .st { font-size:.95rem; }
+  .step .st b { color:var(--acc); }
+
+  blockquote { border-left:3px solid var(--acc); padding:8px 24px; margin:28px 0; font-family:var(--serif); font-size:1.12rem; color:var(--acc); }
+
+  /* 边界 */
+  .isnot { border:1px solid var(--line); border-radius:6px; background:var(--wash); padding:24px; margin-top:20px; }
+  .isnot h3 { font-size:.95rem; letter-spacing:2px; color:var(--gold); margin-bottom:14px; }
+  .isnot li { margin:10px 0 10px 18px; font-size:.93rem; color:var(--dim); }
+
+  .cta { padding:48px 0; }
+  .btns { display:flex; gap:12px; flex-wrap:wrap; margin-top:20px; }
+  .btn { display:inline-block; padding:12px 26px; border:1px solid var(--acc); border-radius:4px; text-decoration:none; font-size:.95rem; transition:all .15s; }
+  .btn.primary { background:var(--acc); color:#fff; }
+  .btn.primary:hover { background:#241f4d; }
+  .btn.ghost { color:var(--acc); background:transparent; }
+  .btn.ghost:hover { background:var(--wash); }
+
+  footer { border-top:1px solid var(--line); background:var(--wash); padding:28px 24px; text-align:center; font-size:.82rem; color:var(--dim); }
+  footer a { color:var(--acc); text-decoration:none; border-bottom:1px dotted var(--line); }
+
+  @media(max-width:640px){
+    h1 { font-size:1.95rem; }
+    .persona { grid-template-columns:1fr; }
+    .persona .who { border-right:none; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; padding:14px 20px; }
+    .persona .who .icon { margin-bottom:0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="verbar">
+  <div class="wrap">
+    <span><b>XINKA</b>&nbsp; 标准文本 · 适用人群与使用指南 · 2026-10-03</span>
+    <span><a href="/">首页</a> · <a href="/whitepaper/">白皮书</a> · <a href="/integrate.html">接入</a></span>
+  </div>
+</div>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">给谁用 · 怎么用</div>
+    <h1>谁的话需要被信任，<br>谁就需要信卡。</h1>
+    <p class="lede">信卡不是工具，是<strong>记录规矩</strong>——凡是你的结论要被别人引用、决策、追责的地方，就该用它。以下九类人群已可即刻使用：纯文本规程，粘贴即用，无需安装。</p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="secnum">§ 1 · 适用人群</div>
+    <h2>九类人，九种用法</h2>
+
+    <div class="persona">
+      <div class="who"><div class="icon">🎓</div><div class="name">学生</div></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>论文引用怕编造、网查资料分不清真假、答辩被问「出处呢」</div>
+        <div class="row"><span class="tag">用法</span>查资料时让 AI 按信卡格式输出——每条结论挂【源】【信】【鲜】；写论文只引【已验证·三源】条目，【待核验】的要么补齐要么删</div>
+        <div class="one">出处没写全的段落，就是风险点。</div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="who"><div class="icon">👨‍🏫</div><div class="name">教师 · 学者</div></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>课件数据年份混乱、案例来源不明、讲错了没人提醒</div>
+        <div class="row"><span class="tag">用法</span>课件每页数据标注来源与年份；学期末跑一次保鲜复核——去年的市占率今年可能就变了</div>
+        <div class="one">口径带年份，是学者对学生的最低负责。</div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="who"><div class="icon">🩺</div><div class="name">医生 · 医学生</div></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>指南更新快、剂量数据错不起、患者问「网上说」分不清源</div>
+        <div class="row"><span class="tag">用法</span>诊疗参考只用【已验证】条目，一手源为指南原文/药品说明书；患者科普材料每句带出处，宁标【待核验】不给确定答案</div>
+        <div class="one">在错不起的地方，孤证不立就是行医纪律。</div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="who"><div class="icon">💼</div><div class="name">文员 · 行政</div></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>写报告引用数据怕被问「哪来的」、公文口径对不上</div>
+        <div class="row"><span class="tag">用法</span>报告数据行脚注一行【源｜采｜信】；对外材料只放【已验证】数字；汇编台账按信卡格式留档，交接不丢账</div>
+        <div class="one">报告里的每个数字都带户口本，领导问出处，一指即答。</div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="who"><div class="icon">📰</div><div class="name">媒体 · 编辑</div></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>抢时效怕翻车、转载改稿查不到原文、被指「假新闻」</div>
+        <div class="row"><span class="tag">用法</span>发稿前把关键断言按三源核对；存一份引文+抓取日期（指纹），事后改稿争议有据可查</div>
+        <div class="one">翻车时，指纹比记忆可靠。</div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="who"><div class="icon">⚖️</div><div class="name">律师 · 法务</div></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>法条引用须精确到条、司法解释更替频繁、尽调底稿要经得起复核</div>
+        <div class="row"><span class="tag">用法</span>法条引用带文号+施行日期+修订状态；尽调结论按信卡归档——谁、何时、依什么源下的判断，全程留痕</div>
+        <div class="one">可追溯的尽调底稿，本身就是专业价值。</div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="who"><div class="icon">📈</div><div class="name">金融 · 投资</div></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>财报口径杂、卖方报告二手三手、复盘找不到当时的依据</div>
+        <div class="row"><span class="tag">用法</span>研报数字只收一手源（交易所披露/年报）标【已验证】；传闻一律【待核验】不入决策；建自己的信卡库，复盘连当时的「证据」一起回看</div>
+        <div class="one">决策的依据和决策本身一样重要。</div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="who"><div class="icon">🏗️</div><div class="name">设计师 · 工程师</div></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>产品参数各说各话、标准条文会换版、给客户的报告要有据可依</div>
+        <div class="row"><span class="tag">用法</span>选型结论按信卡归档（参数等硬数字带源）；国标引用标标准号+年份+现行状态；给客户的报告挂信卡附录</div>
+        <div class="one">你给客户的每个参数，都能翻出户口页。</div>
+      </div>
+    </div>
+
+    <div class="persona">
+      <div class="who"><div class="icon">🤖</div><div class="name">AI 从业者</div></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>AI 输出没法验、幻觉无凭、接了大模型不敢用在正经场景</div>
+        <div class="row"><span class="tag">用法</span>让 AI 输出信卡 JSON（<a href="/integrate.html">提示词模板</a>一键复制）；校验器把关 R1-R10；MCP 插座直连</div>
+        <div class="one">从「看着像对」到「可以查」，中间隔着一套记录规范。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="secnum">§ 2 · 通用用法</div>
+    <h2>三步上手</h2>
+    <div class="steps">
+      <div class="step"><div class="st"><b>起步</b>：给 AI 贴作业规程（<a href="/integrate.html">integrate.html</a> 一键复制，豆包/千问/DeepSeek 通用），派活加一句「按信卡标准输出」。</div></div>
+      <div class="step"><div class="st"><b>把关</b>：结论交校验器（<a href="/validate.html">validate.html</a> 或 CLI）——孤证、编造、过期自动拦。</div></div>
+      <div class="step"><div class="st"><b>积累</b>：过卡结论入自己的库（文档/表格/知识树都行）——用得越久，你的可信资产越厚。</div></div>
+    </div>
+    <blockquote>信卡不是卡，它是一套标准：规定可信的结论该如何记录、如何核验、何时过期。</blockquote>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="secnum">§ 3 · 边界</div>
+    <h2>这个标准不做什么</h2>
+    <div class="isnot">
+      <h3>XINKA 不是</h3>
+      <ul>
+        <li>不承诺「永远正确」——三源同错也会照实记录；承诺的是<strong>错了查得清、追得回</strong></li>
+        <li>不是产品，不卖会员——schema 与校验器全免费</li>
+        <li>不采集你的数据——校验本地完成，复制带走即归你</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="cta">
+  <div class="wrap">
+    <div class="secnum">§ 4 · 开始</div>
+    <h2>选你的人群，贴上规程，今天就用</h2>
+    <div class="btns">
+      <a class="btn primary" href="/integrate.html">🔌 获取作业规程</a>
+      <a class="btn ghost" href="/validate.html">🔧 试用校验器</a>
+      <a class="btn ghost" href="/whitepaper/">📖 阅读白皮书</a>
+      <a class="btn ghost" href="https://github.com/renshiliao/xinka">⭐ GitHub</a>
+      <a class="btn ghost" href="mailto:hi@xinka.ai">✉ hi@xinka.ai</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 Xinka Standard · 信卡 · Created by <strong>Ren Shiliao（任世燎）</strong> · <a href="https://xinka.ai">xinka.ai</a> · <a href="https://github.com/renshiliao/xinka">GitHub</a><br>
+  本页为纯静态页面，不采集任何数据——复制带走即归您，我们不留存任何副本。
+</footer>
+</body>
+</html>
