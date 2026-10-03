@@ -96,3 +96,20 @@ python3 tools/xinka_pipeline.py scan cards/
 ```
 
 R8 独立性预检：verified 卡三源须跨 ≥2 个独立域名——三篇转载稿冒充三源直接拦下（防伪互证）。
+
+## MCP 插座（2026-10-03 新增）
+`tools/xinka_mcp.py` — 标准 MCP 服务器（stdio·零依赖），任何支持 MCP 的 AI 客户端即插即用：
+
+```json
+{"command": "python3", "args": ["tools/xinka_mcp.py"]}
+```
+
+暴露三个工具：
+| 工具 | 作用 |
+|---|---|
+| `xinka_make_card` | 断言+三源→信卡 JSON（单源自降 pending·同域名伪互证拒收） |
+| `xinka_check_card` | 信卡→R1-R7+R8 独立性校验 |
+| `xinka_freshness` | 扫卡目录→过期/临期清单 |
+
+## 提示词模板
+`prompts/XINKA_AGENT_PROMPT.md` — 给任何 AI 的"户口本作业规程"（角色/五条铁律/JSON 模板/自检清单/边界），粘贴即用。
