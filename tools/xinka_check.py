@@ -9,7 +9,7 @@ xinka check — Xinka（信卡）免费校验器
     python3 xinka_check.py cards/*.json         # 校验多张
     python3 xinka_check.py --example            # 输出一张示例卡
 
-规则（Xinka Spec v0.1）:
+规则（Xinka Spec v0.1 / v0.2）:
     R1  六要素必填齐备（源/采/信/鲜/位/证）
     R2  时间格式 RFC 3339；collected_at 必须早于 freshness_until
     R3  trust_level 只能是 verified / pending
@@ -17,8 +17,13 @@ xinka check — Xinka（信卡）免费校验器
     R5  保鲜期已过（now > freshness_until）且未复核 -> 强制降级提示
     R6  verification.checked_at 不得早于 collected_at
     R7  source_url 必须 http(s)，position 坐标合法
+    R9  源分级（v0.2）: verified 卡须含 >=1 一手源(first-party)，聚合/UGC 不可单独成证
+    R10 引文绑定（v0.2）: evidence 引文 >=8 字、逐字出自对应源、附 sha256 指纹
 
-Xinka Specification Early Draft v0.1
+v0.1 卡按 R1-R7 校验（向后兼容）；v0.2 卡追加 R9/R10。
+引文逐字核对与 sha256 复核（抓取比对）由 xinka_evidence.py / pipeline --reverify 完成。
+
+Xinka Specification Early Draft v0.2
 Created by Ren Shiliao (任世燎) · 2026 · xinka.ai
 """
 
@@ -56,6 +61,19 @@ def parse_time(v):
         return datetime.fromisoformat(v.replace("Z", "+00:00"))
     except ValueError:
         return None
+
+
+def _src_url(s):
+    """v0.2 sources 可为字符串或 {url, tier, note} 对象——统一取 url"""
+    return s.get("url", "") if isinstance(s, dict) else str(s)
+
+
+def _src_tier(s):
+    return s.get("tier") if isinstance(s, dict) else None
+
+
+def _src_note(s):
+    return s.get("note", "") if isinstance(s, dict) else ""
 
 
 def check_card(card, now=None):
@@ -101,6 +119,7 @@ def check_card(card, now=None):
 
     # verification 结构
     ver = card.get("verification")
+    is_v02 = str(card.get("xinka_version", "")).startswith("0.2")
     if isinstance(ver, dict):
         for k in VERIF_REQUIRED:
             if k not in ver:
@@ -109,14 +128,43 @@ def check_card(card, now=None):
         if not isinstance(srcs, list):
             errors.append("R6 verification.sources 必须是数组")
             srcs = []
+        urls = [_src_url(s) for s in srcs]
         # R4 verified 需 >=3 独立源
         if tl == "verified":
-            uniq = set(map(str, srcs))
+            uniq = set(urls)
             if len(uniq) < 3:
                 errors.append(f"R4 verified 卡须 >=3 个互不相同的互证来源（当前 {len(uniq)}）")
         # 独立性提示
-        elif len(set(map(str, srcs))) != len(srcs):
+        elif len(set(urls)) != len(urls):
             warnings.append("R4 sources 中存在重复来源——独立性存疑")
+        # R9 源分级（v0.2）
+        if is_v02:
+            tiers = [_src_tier(s) for s in srcs]
+            if tl == "verified" and not any(t == "first-party" for t in tiers):
+                errors.append("R9 verified 卡须含 >=1 一手源（first-party）——聚合/UGC 不可单独成证")
+            for s in srcs:
+                t = _src_tier(s)
+                if t is not None and t not in ("first-party", "media", "aggregator", "unknown"):
+                    errors.append(f"R9 源分级非法: {t!r}（只允许 first-party/media/aggregator/unknown）")
+        # R10 引文绑定（v0.2）
+        ev = card.get("evidence")
+        if is_v02:
+            if not isinstance(ev, list) or not ev:
+                errors.append("R10 缺 evidence 引文绑定——v0.2 卡必须附引文+指纹")
+            else:
+                for i, e in enumerate(ev):
+                    if not isinstance(e, dict):
+                        errors.append(f"R10 evidence[{i}] 必须是 object")
+                        continue
+                    q = normalize_local(e.get("quote", ""))
+                    if len(q) < 8:
+                        errors.append(f"R10 evidence[{i}] 引文过短（<8 字）不足以绑定")
+                    if not e.get("sha256") or not re.match(r"^[0-9a-f]{64}$", str(e.get("sha256"))):
+                        errors.append(f"R10 evidence[{i}] 缺合法 sha256 指纹")
+                    if e.get("url") not in urls and e.get("url") != card.get("source_url"):
+                        errors.append(f"R10 evidence[{i}] url 不在 sources 内——引文须绑定到证源")
+        elif ev is not None:
+            warnings.append("R10 检测到 evidence 字段但 xinka_version 非 0.2——建议升版")
         # R6 checked_at 顺序
         chk = ver.get("checked_at")
         if chk is not None:
@@ -129,6 +177,11 @@ def check_card(card, now=None):
         errors.append("R1 verification 必须是 object")
 
     return errors, warnings
+
+
+def normalize_local(text):
+    """引文归一（与 xinka_evidence.normalize 同口径的轻量版）"""
+    return re.sub(r"\s+", " ", str(text)).strip()
 
 
 def main(argv):

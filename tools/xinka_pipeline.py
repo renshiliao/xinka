@@ -31,6 +31,11 @@ from datetime import datetime, timezone, timedelta
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CHECKER = os.path.join(HERE, "xinka_check.py")
+sys.path.insert(0, HERE)
+try:
+    import xinka_evidence as ev
+except ImportError:
+    ev = None
 
 
 def now_iso():
@@ -78,24 +83,90 @@ def online_check(urls):
     return warns
 
 
+def bind_evidence(item, card):
+    """R10 引文绑定 + R9 源分级 + 可达硬拦 + 快照（v0.2 全链）。
+
+    返回 (errors, notes)。errors 非空 = 卡不过。
+    """
+    errors, notes = [], []
+    if ev is None:
+        return ["R10 xinka_evidence 模块缺失——无法完成引文绑定"], []
+    sources = item.get("sources", [])
+    # ① 可达硬拦 + 抓正文（每源只抓一次）
+    texts = {}
+    for s in sources:
+        url = s["url"] if isinstance(s, dict) else s
+        try:
+            texts[url] = ev.fetch_text(url)
+        except Exception as e:
+            errors.append(f"R10 源不可达（{type(e).__name__}）——硬拦: {url}")
+    if errors:
+        return errors, notes
+    # ② 引文绑定（quote 可在 item 顶层=主证源，或每源带 quote）
+    quotes = item.get("quotes", [])
+    if not quotes and item.get("quote"):
+        quotes = [{"url": sources[0]["url"] if isinstance(sources[0], dict) else sources[0],
+                   "quote": item["quote"]}]
+    evidence = []
+    for q in quotes:
+        url = q["url"]
+        if url not in texts:
+            errors.append(f"R10 引文源不在 sources 内: {url}")
+            continue
+        b = ev.bind_quote(url, q["quote"], fetched_text=texts[url])
+        if not b["ok"]:
+            errors.append(f"R10 引文绑定失败: {b['reason']}（{url}）")
+        evidence.append({k: b[k] for k in ("url", "quote", "sha256", "fetched_at")})
+    if not evidence:
+        errors.append("R10 未提供任何引文（item.quote 或 item.quotes）——v0.2 卡必须引文绑定")
+    # ③ R9 源分级（机器核验+归一）
+    norm_sources = []
+    for s in sources:
+        if isinstance(s, dict):
+            tier, err = ev.classify_tier(s.get("url", ""), s.get("tier"), s.get("first_party_note", ""))
+            if err:
+                errors.append(err)
+            norm_sources.append({"url": s["url"], "tier": tier})
+        else:
+            tier, _ = ev.classify_tier(s, None)
+            norm_sources.append({"url": s, "tier": tier})
+    # ④ 快照存档（尽力而为，失败只记不拦）
+    snaps = {}
+    for s in norm_sources:
+        snap = ev.snapshot(s["url"])
+        if snap:
+            snaps[s["url"]] = snap
+        else:
+            notes.append(f"快照存档失败（不影响过卡）: {s['url']}")
+    if snaps:
+        notes.append(f"archive.org 快照 {len(snaps)}/{len(norm_sources)} 成功")
+    card["xinka_version"] = "0.2"
+    card["verification"]["sources"] = norm_sources
+    card["evidence"] = evidence
+    if snaps:
+        card["snapshots"] = snaps
+    return errors, notes
+
+
 def build_card(item, index):
     sources = item.get("sources", [])
-    trust = item.get("trust_level") or ("verified" if len(sources) >= 3 else "pending")
+    src_urls = [s["url"] if isinstance(s, dict) else s for s in sources]
+    trust = item.get("trust_level") or ("verified" if len(src_urls) >= 3 else "pending")
     collected = item.get("collected_at") or now_iso()
     years = float(item.get("freshness_years", 2))
     t0 = datetime.strptime(collected, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     fresh = (t0 + timedelta(days=365 * years)).strftime("%Y-%m-%dT%H:%M:%SZ")
     card = {
-        "xinka_version": "0.1",
+        "xinka_version": "0.2",
         "claim": item["claim"],
-        "source_url": sources[0] if sources else "",
+        "source_url": src_urls[0] if src_urls else "",
         "collected_at": collected,
         "trust_level": trust,
         "freshness_until": fresh,
         "position": item["position"],
         "verification": {
             "method": "three-source cross-check" if trust == "verified" else "single/partial source",
-            "sources": sources,
+            "sources": src_urls,
             "checked_at": now_iso() if trust == "verified" else None,
         },
     }
@@ -109,7 +180,7 @@ def run_check(card_path):
     return r.returncode == 0, (r.stdout + r.stderr).strip()
 
 
-def cmd_run(req_path, out_dir, online):
+def cmd_run(req_path, out_dir):
     req = json.load(open(req_path, encoding="utf-8"))
     items = req if isinstance(req, list) else [req]
     os.makedirs(out_dir, exist_ok=True)
@@ -119,8 +190,8 @@ def cmd_run(req_path, out_dir, online):
     report = {"total": len(items), "passed": 0, "failed": 0, "warned": 0, "details": []}
     for i, item in enumerate(items, 1):
         entry = {"claim": item.get("claim", "")[:40], "status": "", "notes": []}
-        issues = independence_check(item.get("sources", []), item.get("trust_level") or ("verified" if len(item.get("sources", [])) >= 3 else "pending"))
-        warns = online_check(item.get("sources", [])) if online else []
+        src_urls = [s["url"] if isinstance(s, dict) else s for s in item.get("sources", [])]
+        issues = independence_check(src_urls, item.get("trust_level") or ("verified" if len(src_urls) >= 3 else "pending"))
         if issues:
             entry["status"] = "REJECTED(R8)"
             entry["notes"] = issues
@@ -131,22 +202,30 @@ def cmd_run(req_path, out_dir, online):
                 print(f"    {x}")
             continue
         card = build_card(item, i)
+        # v0.2 全链：可达硬拦 + 引文绑定 + 源分级 + 快照
+        ev_errors, ev_notes = bind_evidence(item, card)
+        if ev_errors:
+            entry["status"] = "REJECTED(R9/R10)"
+            entry["notes"] = ev_errors
+            report["failed"] += 1
+            report["details"].append(entry)
+            print(f"✗ [{i}/{len(items)}] R9/R10 拦下: {entry['claim']}…")
+            for x in ev_errors:
+                print(f"    {x}")
+            continue
         fn = os.path.join(out_dir, slug(card["position"]) + ".json")
         json.dump(card, open(fn, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
         ok, out = run_check(fn)
         if ok:
             entry["status"] = "OK"
             report["passed"] += 1
-            if warns:
-                report["warned"] += 1
-                entry["notes"] = warns
-            # 入登记索引
+            entry["notes"] = ev_notes
             index.append({"position": card["position"], "file": os.path.basename(fn),
                           "trust_level": card["trust_level"], "freshness_until": card["freshness_until"],
                           "collected_at": card["collected_at"], "registered": now_iso()})
-            print(f"✓ [{i}/{len(items)}] 信卡合法 → {fn}")
-            for w in warns:
-                print(f"    ⚠ {w}")
+            print(f"✓ [{i}/{len(items)}] 信卡合法（v0.2·引文绑定）→ {fn}")
+            for w in ev_notes:
+                print(f"    · {w}")
         else:
             entry["status"] = "REJECTED(R1-R7)"
             entry["notes"] = out.splitlines()[:4]
@@ -160,7 +239,41 @@ def cmd_run(req_path, out_dir, online):
     json.dump(report, open(os.path.join(out_dir, "pipeline_report.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=2)
     print(f"\n—— 流水线完成: {report['passed']}/{report['total']} 过卡 · "
-          f"{report['failed']} 拦下 · {report['warned']} 带警告 · 索引累计 {len(index)} 条")
+          f"{report['failed']} 拦下 · 索引累计 {len(index)} 条")
+
+
+def cmd_reverify(dir_path):
+    """复检: 重抓源正文→比对 evidence.sha256 指纹——源改稿/消失当场现形"""
+    if ev is None:
+        print("xinka_evidence 模块缺失")
+        return
+    total = ok = drifted = vanished = 0
+    for fn in sorted(os.listdir(dir_path)):
+        if not fn.endswith(".json") or fn == "cards_index.json":
+            continue
+        card = json.load(open(os.path.join(dir_path, fn), encoding="utf-8"))
+        for e in card.get("evidence", []):
+            total += 1
+            url, digest = e["url"], e["sha256"]
+            try:
+                text = ev.fetch_text(url)
+            except Exception as ex:
+                vanished += 1
+                print(f"  ✗ 源已失效: {fn} ← {url}（{type(ex).__name__}）")
+                continue
+            import hashlib
+            now_digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+            if now_digest == digest:
+                ok += 1
+            else:
+                drifted += 1
+                print(f"  ⚠ 源已改稿（指纹漂移）: {fn} ← {url}")
+                q = ev.normalize(e.get("quote", ""))
+                if q and q in text:
+                    print(f"    （引文仍在正文中——断言未受影响）")
+                else:
+                    print(f"    ✗✗ 引文已不在正文——断言失据，须复核降级！")
+    print(f"\n—— 复检完成: {total} 引文 · 指纹一致 {ok} · 改稿 {drifted} · 失效 {vanished}")
 
 
 def cmd_scan(dir_path):
@@ -192,16 +305,17 @@ def cmd_scan(dir_path):
 
 def main():
     args = sys.argv[1:]
-    if not args or args[0] not in ("run", "scan"):
+    if not args or args[0] not in ("run", "scan", "reverify"):
         print(__doc__)
         sys.exit(1)
     if args[0] == "run":
         req = args[1]
         out = "cards"
-        online = "--online" in args
         if "--out" in args:
             out = args[args.index("--out") + 1]
-        cmd_run(req, out, online)
+        cmd_run(req, out)
+    elif args[0] == "reverify":
+        cmd_reverify(args[1])
     else:
         cmd_scan(args[1])
 
