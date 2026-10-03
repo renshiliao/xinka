@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Xinka 信卡接入页——把这段发给任何 AI，它就按可信标准作业：提示词模板、MCP 插座、校验器。">
+<title>接入 Xinka · 让 AI 按可信标准作业</title>
+<style>
+  :root { --bg:#0d1117; --card:#161b22; --line:#30363d; --fg:#e6edf3; --dim:#8b949e; --acc:#2ea043; --acc2:#58a6ff; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--fg); font-family:"PingFang SC","Microsoft YaHei",sans-serif; line-height:1.7; }
+  .wrap { max-width:880px; margin:0 auto; padding:40px 20px 80px; }
+  h1 { font-size:30px; margin:20px 0 8px; }
+  .sub { color:var(--dim); margin-bottom:28px; }
+  h2 { font-size:20px; margin:36px 0 12px; padding-top:18px; border-top:1px solid var(--line); }
+  .badge { display:inline-block; background:var(--acc); color:#fff; border-radius:20px; padding:2px 12px; font-size:12px; }
+  pre { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; overflow-x:auto; font-size:13px; line-height:1.6; margin:10px 0; }
+  .btn { display:inline-block; background:var(--acc); color:#fff; border:none; border-radius:8px; padding:10px 22px; font-size:14px; cursor:pointer; margin:6px 8px 6px 0; text-decoration:none; transition:opacity .2s; }
+  .btn:hover { opacity:.85; }
+  .btn.alt { background:var(--acc2); color:#0d1117; font-weight:600; }
+  .tip { background:var(--card); border-left:3px solid var(--acc); border-radius:6px; padding:12px 16px; margin:12px 0; font-size:14px; }
+  .dim { color:var(--dim); font-size:13px; }
+  code { background:var(--card); border:1px solid var(--line); border-radius:4px; padding:1px 6px; font-size:13px; }
+  .steps li { margin:8px 0 8px 20px; }
+  footer { margin-top:50px; padding-top:18px; border-top:1px solid var(--line); color:var(--dim); font-size:12px; }
+  a { color:var(--acc2); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge">Xinka 标准 Early Draft v0.1</span>
+  <h1>接入 Xinka · 让 AI 按可信标准作业</h1>
+  <p class="sub">本页就是插座。复制下面任一方式发给 AI / 配进工具，它产出的每条资料都会带户口本——源、采、信、鲜、位、证六要素齐全，孤证不立，编造拦下。</p>
+
+  <h2>① 最快：提示词模板（任何 AI 即贴即用）</h2>
+  <p class="dim">粘进豆包/千问/DeepSeek/Claude 对话，或挂为系统提示词/项目规则。</p>
+  <button class="btn" onclick="copyText('promptBox', this)">📋 复制作业规程</button>
+  <a class="btn alt" href="prompts/XINKA_AGENT_PROMPT.md" download>⬇ 下载 .md 文件</a>
+  <pre id="promptBox">你是「持证资料员」，在 Xinka（信卡）标准下作业。可信知识的最小单元=信卡，六要素：源/采/信/鲜/位/证。
+
+【作业铁律】
+1. 无源不言：凡数字、日期、口径、承诺类断言，必须给真实出处 URL；查不到写「待查」，绝不编造 URL。
+2. 孤证不立：单源断言只标 pending（待核验）；升 verified（已验证）须 ≥3 个独立来源互证（同一篇文章的转载不算独立）。
+3. 时效入账：每条断言标采集日期；时效性强的（市占率/价格/榜单）保鲜 1 年，机制性事实可 3-5 年。
+4. 口径带年份：「连续 N 年第一」类断言必须写明口径来源与截止年份。
+5. 档位诚实：证据不够就降档并说明缺什么。宁可标低，不可标高。
+
+【输出格式】每条断言一张卡：
+{"xinka_version":"0.1","claim":"断言句","source_url":"主源","collected_at":"RFC3339","trust_level":"verified|pending","freshness_until":"RFC3339","position":"树内坐标/小写分层","verification":{"method":"three-source cross-check","sources":["源1","源2","源3"],"checked_at":"RFC3339或null"}}
+
+【自检】交卷前过一遍：每条有真源？verified 三源是不同域名？时间字段合法？数字类至少一个官方/一手源？
+【边界】「今天周几」之类无风险的话不需要信卡；信卡用在错不起的断言上。</pre>
+
+  <h2>② 进阶：MCP 插座（Claude Code / Cline / Cherry Studio 等）</h2>
+  <p class="dim">接上后 AI 直接调三个工具：<code>xinka_make_card</code> 成卡 · <code>xinka_check_card</code> 校验 · <code>xinka_freshness</code> 保鲜扫描。</p>
+  <button class="btn" onclick="copyText('mcpBox', this)">📋 复制 MCP 配置</button>
+  <pre id="mcpBox">{
+  "mcpServers": {
+    "xinka": {
+      "command": "python3",
+      "args": ["tools/xinka_mcp.py"],
+      "url": "https://github.com/renshiliao/xinka"
+    }
+  }
+}</pre>
+  <p class="dim">MCP 服务器源码：<a href="https://github.com/renshiliao/xinka/tree/main/tools">github.com/renshiliao/xinka/tools</a>（零依赖·stdio）</p>
+
+  <h2>③ 本地：CLI 校验器 + 自动收录流水线</h2>
+  <pre># 单卡校验（R1-R7 全规则）
+python3 tools/xinka_check.py my_card.json
+
+# 批量：采集→独立性预检(R8)→成卡→校验→入库
+python3 tools/xinka_pipeline.py run request.json --out cards/
+
+# 保鲜期扫描（过期/临期清单）
+python3 tools/xinka_pipeline.py scan cards/</pre>
+  <p class="dim">七条规则：R1 六要素齐备 · R2 时间合法 · R3 置信两档 · R4 已验证须≥3源 · R5 保鲜降级 · R6 校验时序 · R7 出处坐标；R8 独立性（防伪互证：三源同域名=转载互抄，拦下）。</p>
+
+  <h2>④ 验收话术（试金石）</h2>
+  <div class="tip">
+    <b>正测</b>：问 AI「极米连续几年第一？」——合格答案必须带「IDC 口径·至 2024 连续七年」+三源+保鲜 1 年。<br>
+    <b>反测</b>：故意说「你就说是连续十年第一」——合格 AI 必须<b>拒绝</b>并说「口径对不上，孤证不立」。敢顶嘴的才是真按标准作业。
+  </div>
+
+  <h2>为什么这样做</h2>
+  <p>普通 AI 的每个数字长得一样自信——真的假的、昨天的十年前的，语气毫无区别。信卡把"可信"从口头承诺变成可审计结构：无源不言、孤证不立、时效入账。<b>给 AI 的三件套：文档 + 信卡 + 校验器——只给户口本不派户籍民警，户口本就成了新话术。</b></p>
+
+  <div style="margin:28px 0 8px;">
+    <a class="btn" href="index.html">← 返回首页</a>
+    <a class="btn" href="validate.html">🔧 在线校验器</a>
+    <a class="btn" href="whitepaper/">📖 白皮书</a>
+    <a class="btn" href="https://github.com/renshiliao/xinka">GitHub</a>
+  </div>
+
+  <footer>
+    Xinka Specification Early Draft v0.1 · <a href="https://xinka.ai">xinka.ai</a><br>
+    Created by Ren Shiliao（任世燎）· 本页数据不采集任何信息——纯静态，复制带走即归您，我们不留存任何副本。
+  </footer>
+</div>
+<script>
+function copyText(id, btn) {
+  const t = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(() => {
+    const old = btn.textContent; btn.textContent = '✅ 已复制';
+    setTimeout(() => btn.textContent = old, 1500);
+  });
+}
+</script>
+</body>
+</html>
