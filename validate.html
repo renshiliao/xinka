@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>校验器 · Xinka 信卡</title>
-<meta name="description" content="Xinka 信卡免费在线校验器——贴入 JSON 即时校验 R1-R7 七条规则，也可用表单生成合规信卡。">
+<meta name="description" content="Xinka 信卡免费在线校验器——贴入 JSON 即时校验 R1-R10 十条规则（含 R9 源分级/R10 引文绑定），也可用表单生成合规信卡。">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; color:#1a1a2e; background:#fafafa; line-height:1.8; }
@@ -53,7 +53,7 @@
 <div class="top"><a href="/">← xinka.ai 首页</a> &nbsp;·&nbsp; 免费校验器</div>
 <div class="wrap">
   <h1>🔧 Xinka 校验器 Web 版</h1>
-  <p class="sub">免费、零门槛——与 CLI 版 <code>tools/xinka_check.py</code> 同一套 R1-R7 规则。</p>
+  <p class="sub">免费、零门槛——与 CLI 版 <code>tools/xinka_check.py</code> 同一套规则（R1-R10）。逐字引文比对与 sha256 指纹复核由 CLI <code>reverify</code> 命令完成。</p>
 
   <div class="privacy-banner">🔒 我们不采集您的数据——校验与生成全部在您的浏览器内本地完成，零上传、零记录、零 Cookie。</div>
 
@@ -157,7 +157,7 @@ function loadExample() {
 }
 document.getElementById('exampleBox').value = JSON.stringify(EXAMPLE, null, 2);
 
-/* ===== R1-R7 校验（与 xinka_check.py 同源逻辑）===== */
+/* ===== R1-R10 校验（与 xinka_check.py 同源逻辑）===== */
 const REQUIRED = ["xinka_version","claim","source_url","collected_at","trust_level","freshness_until","position","verification"];
 const POS_RE = /^[a-z0-9\-]+(\/[a-z0-9\-\.]+)*$/;
 
@@ -191,15 +191,44 @@ function checkCard(card) {
   else if (fu && new Date() > fu) warnings.push("R5 保鲜期已过——待复核（当前已是 pending）");
 
   const ver = card.verification;
+  const isV02 = String(card.xinka_version || "").startsWith("0.2");
+  const srcUrl = s => (s && typeof s === "object") ? s.url : String(s);
   if (ver && typeof ver === "object" && !Array.isArray(ver)) {
     ["method","sources","checked_at"].forEach(k => { if (!(k in ver)) errors.push(`R1 verification 缺字段【${k}】`); });
     let srcs = ver.sources;
     if (!Array.isArray(srcs)) { errors.push("R6 verification.sources 必须是数组"); srcs = []; }
+    const urls = srcs.map(srcUrl);
     if (tl === "verified") {
-      const uniq = new Set(srcs.map(String));
+      const uniq = new Set(urls);
       if (uniq.size < 3) errors.push(`R4 verified 卡须 ≥3 个互不相同的互证来源（当前 ${uniq.size}）`);
-    } else if (new Set(srcs.map(String)).size !== srcs.length) {
+    } else if (new Set(urls).size !== urls.length) {
       warnings.push("R4 sources 中存在重复来源——独立性存疑");
+    }
+    /* R9 源分级（v0.2） */
+    if (isV02) {
+      const tiers = srcs.map(s => (s && typeof s === "object") ? s.tier : null);
+      if (tl === "verified" && !tiers.includes("first-party"))
+        errors.push("R9 verified 卡须含 ≥1 一手源（first-party）——聚合/UGC 不可单独成证");
+      tiers.forEach(t => { if (t != null && !["first-party","media","aggregator","unknown"].includes(t))
+        errors.push(`R9 源分级非法: "${t}"（只允许 first-party/media/aggregator/unknown）`); });
+    }
+    /* R10 引文绑定（v0.2）——引文与指纹结构核对；逐字比对由 CLI --reverify 抓取复核 */
+    const evd = card.evidence;
+    if (isV02) {
+      if (!Array.isArray(evd) || !evd.length) {
+        errors.push("R10 缺 evidence 引文绑定——v0.2 卡必须附引文+指纹");
+      } else {
+        evd.forEach((e, i) => {
+          if (typeof e !== "object" || e === null) { errors.push(`R10 evidence[${i}] 必须是 object`); return; }
+          const q = String(e.quote || "").replace(/\s+/g, " ").trim();
+          if (q.length < 8) errors.push(`R10 evidence[${i}] 引文过短（<8 字）不足以绑定`);
+          if (!/^[0-9a-f]{64}$/.test(String(e.sha256 || ""))) errors.push(`R10 evidence[${i}] 缺合法 sha256 指纹`);
+          if (!urls.includes(e.url) && e.url !== card.source_url)
+            errors.push(`R10 evidence[${i}] url 不在 sources 内——引文须绑定到证源`);
+        });
+      }
+    } else if (evd != null) {
+      warnings.push("R10 检测到 evidence 字段但 xinka_version 非 0.2——建议升版");
     }
     if (ver.checked_at != null) {
       const ct = parseTime(ver.checked_at);
@@ -227,7 +256,7 @@ function runCheck() {
     errors.forEach(e => h += `<div class="item err">ERROR  ${e}</div>`);
   }
   warnings.forEach(w => h += `<div class="item warn">WARN   ${w}</div>`);
-  if (!errors.length && !warnings.length) h += '<div class="item ok">七条规则全过，零警告。</div>';
+  if (!errors.length && !warnings.length) h += '<div class="item ok">十条规则全过，零警告。</div>';
   out.innerHTML = h;
 }
 

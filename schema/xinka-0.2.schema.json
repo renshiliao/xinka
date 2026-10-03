@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://xinka.ai/schema/xinka-0.2.json",
+  "title": "Xinka Card",
+  "description": "Xinka（信卡）——可信知识的最小单元。六要素：源(Source)/采(Collected)/信(Trust)/鲜(Freshness)/位(Position)/证(Verified)。Xinka Specification Early Draft v0.2 · Created by Ren Shiliao (任世燎) v0.2 增补：R9 源分级(sources.tier)/R10 引文绑定(evidence.sha256)/快照(snapshots)",
+  "type": "object",
+  "required": [
+    "xinka_version",
+    "claim",
+    "source_url",
+    "collected_at",
+    "trust_level",
+    "freshness_until",
+    "position",
+    "verification"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "xinka_version": {
+      "type": "string",
+      "description": "信卡结构版本号（兼容性判定）",
+      "pattern": "^0\\.[0-9]+$"
+    },
+    "claim": {
+      "type": "string",
+      "description": "知识断言本体——不可再拆而保持语义完整的最小命题",
+      "minLength": 4,
+      "maxLength": 500
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "【源】原始出处 URL——无出处则任何引用不成立",
+      "pattern": "^https?://"
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "【采】采集时刻（RFC 3339）——同 URL 内容会变，不记采集时间则档案无法复现"
+    },
+    "trust_level": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "pending"
+      ],
+      "description": "【信】置信度两档：verified=已验证（须三源互证）/ pending=待核验"
+    },
+    "freshness_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "【鲜】保鲜期截止（RFC 3339）——到期未复核自动降级 pending"
+    },
+    "position": {
+      "type": "string",
+      "description": "【位】知识树内坐标，层级用 / 分隔（如 ai/models/open-weights/mimo）",
+      "pattern": "^[a-z0-9\\-]+(/[a-z0-9\\-\\.]+)*$",
+      "maxLength": 200
+    },
+    "verification": {
+      "type": "object",
+      "description": "【证】三源互证记录——孤证不立",
+      "required": [
+        "method",
+        "sources",
+        "checked_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "校验方法（如 three-source cross-check）"
+        },
+        "sources": {
+          "type": "array",
+          "description": "参与互证的独立来源 URL 列表；verified 档要求 ≥3 且互不相同",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "证源 URL"
+                  },
+                  "tier": {
+                    "type": "string",
+                    "enum": [
+                      "first-party",
+                      "media",
+                      "aggregator",
+                      "unknown"
+                    ],
+                    "description": "R9 源分级：一手/媒体/聚合/未知"
+                  },
+                  "note": {
+                    "type": "string",
+                    "description": "first-party 申报依据（白名单外域名必填）"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "checked_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "校验时刻；未校验时为 null"
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "description": "R10 引文绑定——引文逐字出自对应源，sha256=抓取正文指纹（复检比对防改稿/防编造）",
+      "items": {
+        "type": "object",
+        "required": [
+          "url",
+          "quote",
+          "sha256",
+          "fetched_at"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "引文所属证源（须在 sources 内）"
+          },
+          "quote": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 300,
+            "description": "原文引文（≥8 字·逐字）"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "抓取正文归一化后 sha256 指纹"
+          },
+          "fetched_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "抓取时刻"
+          }
+        }
+      }
+    },
+    "snapshots": {
+      "type": "object",
+      "description": "archive.org 快照存档（尽力而为）：source_url → snapshot_url",
+      "additionalProperties": {
+        "type": "string",
+        "format": "uri"
+      }
+    }
+  }
+}
