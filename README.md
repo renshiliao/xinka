@@ -84,3 +84,15 @@ python3 tools/xinka_check.py card.json     # 校验：通过 ✓ / 未过 ✗（
 **Created by Ren Shiliao（任世燎）· 2026**
 
 _Xinka（信卡）= Xin（信 · trust）+ ka（卡 · card）——把「信任」做成 AI 时代的度量衡。_
+
+## 自动收录流水线（2026-10-03 新增）
+`tools/xinka_pipeline.py` — 采集→独立性预检(R8)→生成卡→过校验器(R1-R7)→入库登记 一键完成：
+
+```bash
+# 批量成卡（request.json 填 claim/sources/position）
+python3 tools/xinka_pipeline.py run request.json --out cards/
+# 保鲜期扫描（过期/临期清单——催办复核）
+python3 tools/xinka_pipeline.py scan cards/
+```
+
+R8 独立性预检：verified 卡三源须跨 ≥2 个独立域名——三篇转载稿冒充三源直接拦下（防伪互证）。
