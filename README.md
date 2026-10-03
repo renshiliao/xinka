@@ -51,8 +51,12 @@ AI 什么都能答，但答案**不敢信、不敢引、不敢用**：引用怕�
 - [x] 白皮书 v0.1（[中文版](whitepaper/XINKA_WHITEPAPER_ZH.md) · 在线版 [xinka.ai/whitepaper](https://xinka.ai/whitepaper/)）
 - [x] schema 规范（[`schema/xinka-0.1.schema.json`](schema/xinka-0.1.schema.json)）
 - [x] 免费校验器 CLI（[`tools/xinka_check.py`](tools/xinka_check.py)）
-- [ ] 校验器 Web 版
-- [ ] 参考实现与示例卡集
+- [x] 校验器 Web 版（[xinka.ai/validate.html](https://xinka.ai/validate.html)·与 CLI 同源规则）
+- [x] 参考实现与示例卡集（[`examples/`](examples/)·10 张示例卡+期望错误表）
+- [x] v0.2：R9 源分级 + R10 引文绑定（[`schema/xinka-0.2.schema.json`](schema/xinka-0.2.schema.json)）——白皮书信任模型升四机制
+- [x] 自动收录流水线（[`tools/xinka_pipeline.py`](tools/xinka_pipeline.py)·成卡/保鲜扫描/**指纹复检 reverify**）
+- [x] MCP 插座（[`tools/xinka_mcp.py`](tools/xinka_mcp.py)）+ [接入页](https://xinka.ai/integrate.html)（提示词模板即贴即用）
+- [ ] v1.0 正式化（版本语义冻结·变更流程·贡献者协议）——量柱到位后发布
 
 ## Validator · 校验器
 
@@ -60,10 +64,10 @@ AI 什么都能答，但答案**不敢信、不敢引、不敢用**：引用怕�
 
 ```bash
 python3 tools/xinka_check.py --example     # 输出一张示例信卡
-python3 tools/xinka_check.py card.json     # 校验：通过 ✓ / 未过 ✗（R1-R7 七条规则）
+python3 tools/xinka_check.py card.json     # 校验：通过 ✓ / 未过 ✗（R1-R10 规则）
 ```
 
-七条规则：R1 六要素齐备 · R2 时间合法且采集早于保鲜期 · R3 置信两档 · R4 已验证须≥3 独立源 · R5 保鲜到期自动降级提示 · R6 校验时序 · R7 出处与坐标格式。
+规则（v0.2）：R1 六要素齐备 · R2 时间合法且采集早于保鲜期 · R3 置信两档 · R4 已验证须≥3 独立源 · R5 保鲜到期自动降级提示 · R6 校验时序 · R7 出处与坐标格式 · R8 独立性（三源同域名=转载互抄，拦下）· R9 源分级（verified 须含 ≥1 一手源）· R10 引文绑定（引文逐字出自源+sha256 正文指纹）。v0.1 卡按 R1-R7 校验，向后兼容。
 
 ## Get Involved · 参与
 
