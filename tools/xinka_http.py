@@ -70,6 +70,12 @@ class MCPHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
             n = int(self.headers.get("Content-Length", 0))
+            # 上限 1MB（DoS 防护：超大 body 直接 413，不整读入内存）
+            if n > 1_000_000:
+                self.send_response(413)
+                self._cors()
+                self.end_headers()
+                return
             raw = self.rfile.read(n) or b"{}"
             req = json.loads(raw)
         except Exception:
