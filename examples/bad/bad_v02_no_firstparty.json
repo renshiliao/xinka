@@ -1,0 +1,37 @@
+{
+  "xinka_version": "0.2",
+  "claim": "bad:verified卡无一手源测试断言内容",
+  "source_url": "https://example.org/standard",
+  "collected_at": "2026-10-01T10:00:00Z",
+  "trust_level": "verified",
+  "freshness_until": "2027-04-01T10:00:00Z",
+  "position": "test/bad-no-first",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [
+      {
+        "url": "https://example.org/standard",
+        "tier": "media",
+        "note": "标准原件"
+      },
+      {
+        "url": "https://news.example.net/a",
+        "tier": "media",
+        "note": "媒体"
+      },
+      {
+        "url": "https://agg.example.edu/b",
+        "tier": "media",
+        "note": "聚合"
+      }
+    ],
+    "checked_at": "2026-10-02T10:00:00Z"
+  },
+  "evidence": [
+    {
+      "url": "https://example.org/standard",
+      "quote": "1 lumen equals 1 candela steradian",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ]
+}

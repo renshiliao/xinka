@@ -47,8 +47,9 @@ TIER3_DOMAINS = {
 
 
 def domain_of(url):
+    # BUG-7 修复：lstrip("www.") 字符集剥离 bug——wikipedia.org 曾可伪报一手源
     try:
-        return urllib.parse.urlparse(url).netloc.lower().lstrip("www.")
+        return urllib.parse.urlparse(url).netloc.lower().removeprefix("www.")
     except Exception:
         return ""
 

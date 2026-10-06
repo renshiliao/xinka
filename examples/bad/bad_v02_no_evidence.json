@@ -1,0 +1,30 @@
+{
+  "xinka_version": "0.2",
+  "claim": "bad:v0.2卡缺evidence测试断言内容",
+  "source_url": "https://example.org/standard",
+  "collected_at": "2026-10-01T10:00:00Z",
+  "trust_level": "verified",
+  "freshness_until": "2027-04-01T10:00:00Z",
+  "position": "test/bad-no-evidence",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [
+      {
+        "url": "https://example.org/standard",
+        "tier": "first-party",
+        "note": "标准原件"
+      },
+      {
+        "url": "https://news.example.net/a",
+        "tier": "media",
+        "note": "媒体"
+      },
+      {
+        "url": "https://agg.example.edu/b",
+        "tier": "aggregator",
+        "note": "聚合"
+      }
+    ],
+    "checked_at": "2026-10-02T10:00:00Z"
+  }
+}

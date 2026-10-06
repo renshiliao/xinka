@@ -128,9 +128,10 @@
   </div>
 
   <div class="rules">
-    <h3>七条规则（R1-R7）</h3>
-    <p><b>R1</b> 六要素必填齐备（源/采/信/鲜/位/证）　<b>R2</b> 时间为 RFC 3339 且采集早于保鲜期　<b>R3</b> 置信度仅 <code>verified</code>/<code>pending</code> 两档</p>
+    <h3>十条规则（R1-R10·与 CLI 同源）</h3>
+    <p><b>R1</b> 六要素必填齐备（源/采/信/鲜/位/证）　<b>R2</b> 时间为 RFC 3339（带时区）且采集早于保鲜期　<b>R3</b> 置信度仅 <code>verified</code>/<code>pending</code> 两档</p>
     <p><b>R4</b> <code>verified</code> 卡须 ≥3 个互不相同的互证来源　<b>R5</b> 保鲜期已过应降级为 pending（警告）　<b>R6</b> 校验时刻不得早于采集时刻　<b>R7</b> 出处须 http(s) URL、坐标格式合法</p>
+    <p><b>R8</b> 三源独立性（同域=转载互抄）由 pipeline 预检 / MCP 执行，本校验器不重复检查　<b>R9</b> 源分级（v0.2）：verified 须含 ≥1 一手源　<b>R10</b> 引文绑定（v0.2）：逐字引文 + sha256 指纹</p>
     <p style="margin-top:10px;color:#888">规则本体：<a href="https://github.com/renshiliao/xinka/blob/main/tools/xinka_check.py">github.com/renshiliao/xinka</a> · 标准：<a href="/whitepaper/">白皮书 v0.1</a></p>
   </div>
 </div>
@@ -162,7 +163,9 @@ const REQUIRED = ["xinka_version","claim","source_url","collected_at","trust_lev
 const POS_RE = /^[a-z0-9\-]+(\/[a-z0-9\-\.]+)*$/;
 
 function parseTime(v) {
+  /* BUG-2/14 修复：RFC 3339 必须带时区（Z 或 ±HH:MM），与 CLI parse_time 同口径 */
   if (typeof v !== "string") return null;
+  if (!/(Z|[+-]\d{2}:\d{2})$/.test(v.trim())) return null;
   const d = new Date(v);
   return isNaN(d.getTime()) ? null : d;
 }
@@ -173,11 +176,26 @@ function checkCard(card) {
     return { errors: ["R1 根对象必须是 JSON object"], warnings };
   }
   REQUIRED.forEach(k => { if (!(k in card)) errors.push(`R1 缺要素【${k}】——六要素必填齐备`); });
+  Object.keys(card).forEach(k => { if (!REQUIRED.includes(k) && k !== "evidence" && k !== "snapshots") errors.push(`R1 额外字段【${k}】——schema 不允许 additionalProperties`); });
+  /* BUG-1/3/4/6 修复：值类型/非空/schema 上限——与 CLI 同口径 */
+  const claim = card.claim;
+  if ("claim" in card) {
+    if (typeof claim !== "string") errors.push(`R1 claim 必须是 string（当前 ${claim === null ? "null" : typeof claim}）`);
+    else if (!claim.trim()) errors.push("R1 claim 不可为空");
+    else if (claim.length < 4 || claim.length > 500) errors.push(`R1 claim 长度须 4-500（当前 ${claim.length}）`);
+  }
 
   const su = card.source_url;
-  if (su && !/^https?:\/\//.test(String(su))) errors.push("R7 source_url 必须以 http(s):// 开头");
+  if ("source_url" in card) {
+    if (typeof su !== "string" || !su.trim()) errors.push("R7 source_url 不可为空（无出处则任何引用不成立）");
+    else if (!/^https?:\/\//.test(String(su))) errors.push("R7 source_url 必须以 http(s):// 开头");
+  }
   const pos = card.position;
-  if (pos && (typeof pos !== "string" || !POS_RE.test(pos))) errors.push("R7 position 坐标非法（小写字母/数字/连字符，层级用 / 分隔）");
+  if ("position" in card) {
+    if (typeof pos !== "string" || !pos.trim()) errors.push("R7 position 不可为空");
+    else if (!POS_RE.test(pos)) errors.push("R7 position 坐标非法（小写字母/数字/连字符，层级用 / 分隔）");
+    else if (pos.length > 200) errors.push("R7 position 超长（>200）");
+  }
 
   const tl = card.trust_level;
   if (tl && !["verified","pending"].includes(tl)) errors.push(`R3 trust_level 非法: "${tl}"（只允许 verified / pending）`);
@@ -193,7 +211,9 @@ function checkCard(card) {
   const ver = card.verification;
   const isV02 = String(card.xinka_version || "").startsWith("0.2");
   const srcUrl = s => (s && typeof s === "object") ? s.url : String(s);
-  if (ver && typeof ver === "object" && !Array.isArray(ver)) {
+  if (ver === null && "verification" in card) {
+    errors.push("R1 verification 必须是 object（不可为 null）");
+  } else if (ver && typeof ver === "object" && !Array.isArray(ver)) {
     ["method","sources","checked_at"].forEach(k => { if (!(k in ver)) errors.push(`R1 verification 缺字段【${k}】`); });
     let srcs = ver.sources;
     if (!Array.isArray(srcs)) { errors.push("R6 verification.sources 必须是数组"); srcs = []; }
@@ -221,7 +241,8 @@ function checkCard(card) {
         evd.forEach((e, i) => {
           if (typeof e !== "object" || e === null) { errors.push(`R10 evidence[${i}] 必须是 object`); return; }
           const q = String(e.quote || "").replace(/\s+/g, " ").trim();
-          if (q.length < 8) errors.push(`R10 evidence[${i}] 引文过短（<8 字）不足以绑定`);
+          if (typeof e.quote !== "string" || q.length < 8) errors.push(`R10 evidence[${i}] 引文过短（<8 字）不足以绑定`);
+          else if (q.length > 300) errors.push(`R10 evidence[${i}] 引文超长（>300）`);
           if (!/^[0-9a-f]{64}$/.test(String(e.sha256 || ""))) errors.push(`R10 evidence[${i}] 缺合法 sha256 指纹`);
           if (!urls.includes(e.url) && e.url !== card.source_url)
             errors.push(`R10 evidence[${i}] url 不在 sources 内——引文须绑定到证源`);

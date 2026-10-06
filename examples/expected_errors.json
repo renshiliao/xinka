@@ -1,7 +1,23 @@
 {
-  "bad_missing_source.json": ["R1"],
-  "bad_time_order.json": ["R2"],
-  "bad_trust_level.json": ["R3"],
-  "bad_verified_1source.json": ["R4"],
-  "bad_bad_url.json": ["R7"]
+  "bad_missing_source.json": [
+    "R1"
+  ],
+  "bad_time_order.json": [
+    "R2"
+  ],
+  "bad_trust_level.json": [
+    "R3"
+  ],
+  "bad_verified_1source.json": [
+    "R4"
+  ],
+  "bad_bad_url.json": [
+    "R7"
+  ],
+  "bad_v02_no_firstparty.json": [
+    "R9"
+  ],
+  "bad_v02_no_evidence.json": [
+    "R10"
+  ]
 }

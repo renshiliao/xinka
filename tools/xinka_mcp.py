@@ -60,8 +60,11 @@ TOOLS = [
 
 
 def _domain(url):
+    # BUG-7/8 修复：dict 源取 url 字段；removeprefix 替代 lstrip 字符集剥离
+    if isinstance(url, dict):
+        url = url.get("url", "")
     try:
-        return urllib.parse.urlparse(url).netloc.lower().lstrip("www.")
+        return urllib.parse.urlparse(url).netloc.lower().removeprefix("www.")
     except Exception:
         return ""
 
@@ -122,14 +125,16 @@ def freshness_scan(dir_path):
         return {"error": f"目录不存在: {dir_path}"}
     now = datetime.now(timezone.utc)
     soon_before = now + timedelta(days=60)
-    expired, soon = [], []
+    expired, soon, bad = [], [], []
     for fn in sorted(os.listdir(dir_path)):
         if not fn.endswith(".json"):
             continue
         try:
             c = json.load(open(os.path.join(dir_path, fn), encoding="utf-8"))
-            fu = datetime.strptime(c["freshness_until"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            fu = datetime.fromisoformat(str(c["freshness_until"]).replace("Z", "+00:00"))
         except Exception:
+            # BUG-13 修复：坏卡计数不静默（与 pipeline scan 同口径）
+            bad.append(fn)
             continue
         row = {"file": fn, "position": c.get("position"), "trust_level": c.get("trust_level"),
                "freshness_until": c.get("freshness_until")}

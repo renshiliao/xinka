@@ -42,13 +42,26 @@ def now_iso():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def parse_rfc3339(v):
+    """RFC 3339 -> aware datetime（容忍 Z 与 +08:00 偏移；非法抛 ValueError）"""
+    if not isinstance(v, str) or not re.search(r"(Z|[+-]\d{2}:\d{2})$", v.strip()):
+        raise ValueError(f"非 RFC 3339 时间（须带时区）: {v!r}")
+    dt = datetime.fromisoformat(v.strip().replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        raise ValueError(f"非 RFC 3339 时间（须带时区）: {v!r}")
+    return dt
+
+
 def slug(pos):
-    return re.sub(r"[^a-z0-9\-\.]+", "_", pos.lower())
+    # BUG-10 修复：保留大小写；'/'→'__'、非法字符→'_'（合法 position 不含 '_'，两级映射无歧义，防 a/b 与 a_b 碰撞）
+    s = re.sub(r"[^A-Za-z0-9\-/\.]+", "_", str(pos))
+    return s.replace("/", "__").strip("_")
 
 
 def domain(url):
+    # BUG-7 修复：lstrip("www.") 按字符集剥离会剥坏 wiley.com 等——改 removeprefix
     try:
-        return urllib.parse.urlparse(url).netloc.lower().lstrip("www.")
+        return urllib.parse.urlparse(url).netloc.lower().removeprefix("www.")
     except Exception:
         return ""
 
@@ -153,8 +166,17 @@ def build_card(item, index):
     src_urls = [s["url"] if isinstance(s, dict) else s for s in sources]
     trust = item.get("trust_level") or ("verified" if len(src_urls) >= 3 else "pending")
     collected = item.get("collected_at") or now_iso()
-    years = float(item.get("freshness_years", 2))
-    t0 = datetime.strptime(collected, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    # BUG-9 修复：claim 缺失/时间非 RFC3339/年限非数——抛 ValueError 由上层转校验错误，不裸崩
+    if "claim" not in item:
+        raise ValueError("缺 claim 字段")
+    try:
+        years = float(item.get("freshness_years", 2))
+    except (TypeError, ValueError):
+        raise ValueError(f"freshness_years 非法: {item.get('freshness_years')!r}")
+    try:
+        t0 = parse_rfc3339(collected)
+    except ValueError:
+        raise ValueError(f"collected_at 非 RFC 3339: {collected!r}")
     fresh = (t0 + timedelta(days=365 * years)).strftime("%Y-%m-%dT%H:%M:%SZ")
     card = {
         "xinka_version": "0.2",
@@ -181,7 +203,15 @@ def run_check(card_path):
 
 
 def cmd_run(req_path, out_dir):
-    req = json.load(open(req_path, encoding="utf-8"))
+    # BUG-9 修复：请求文件缺失/坏 JSON——一行报错不裸崩
+    try:
+        req = json.load(open(req_path, encoding="utf-8"))
+    except FileNotFoundError:
+        print(f"✗ 请求文件不存在: {req_path}")
+        sys.exit(2)
+    except json.JSONDecodeError as e:
+        print(f"✗ 请求文件 JSON 解析失败: {e}")
+        sys.exit(2)
     items = req if isinstance(req, list) else [req]
     os.makedirs(out_dir, exist_ok=True)
     index_path = os.path.join(out_dir, "cards_index.json")
@@ -201,7 +231,16 @@ def cmd_run(req_path, out_dir):
             for x in issues:
                 print(f"    {x}")
             continue
-        card = build_card(item, i)
+        try:
+            card = build_card(item, i)
+        except ValueError as e:
+            # BUG-9 修复：请求字段非法转校验错误，不裸崩
+            entry["status"] = "REJECTED(请求非法)"
+            entry["notes"] = [str(e)]
+            report["failed"] += 1
+            report["details"].append(entry)
+            print(f"✗ [{i}/{len(items)}] 请求非法: {entry['claim'] or '(无claim)'}… — {e}")
+            continue
         # v0.2 全链：可达硬拦 + 引文绑定 + 源分级 + 快照
         ev_errors, ev_notes = bind_evidence(item, card)
         if ev_errors:
@@ -214,9 +253,19 @@ def cmd_run(req_path, out_dir):
                 print(f"    {x}")
             continue
         fn = os.path.join(out_dir, slug(card["position"]) + ".json")
-        json.dump(card, open(fn, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-        ok, out = run_check(fn)
+        # BUG-10 修复：先校验后写盘；slug 碰撞拒绝（防好卡被坏卡静默覆盖）；坏卡不入库
+        if os.path.exists(fn):
+            entry["status"] = "REJECTED(slug碰撞)"
+            entry["notes"] = [f"目标文件已存在，拒绝覆盖: {os.path.basename(fn)}"]
+            report["failed"] += 1
+            report["details"].append(entry)
+            print(f"✗ [{i}/{len(items)}] slug 碰撞拦下: {entry['claim']}…（{os.path.basename(fn)} 已存在）")
+            continue
+        tmp_fn = fn + ".tmp"
+        json.dump(card, open(tmp_fn, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+        ok, out = run_check(tmp_fn)
         if ok:
+            os.replace(tmp_fn, fn)
             entry["status"] = "OK"
             report["passed"] += 1
             entry["notes"] = ev_notes
@@ -227,6 +276,9 @@ def cmd_run(req_path, out_dir):
             for w in ev_notes:
                 print(f"    · {w}")
         else:
+            # BUG-10 修复：失败分支删除临时文件——被拦坏卡不留在库
+            if os.path.exists(tmp_fn):
+                os.remove(tmp_fn)
             entry["status"] = "REJECTED(R1-R7)"
             entry["notes"] = out.splitlines()[:4]
             report["failed"] += 1
@@ -280,14 +332,16 @@ def cmd_scan(dir_path):
     """保鲜期扫描: 过期=须复核降级 / 临期 60 天=提醒"""
     now = datetime.now(timezone.utc)
     warn_before = now + timedelta(days=60)
-    expired, soon = [], []
+    expired, soon, bad = [], [], []
     for fn in sorted(os.listdir(dir_path)):
         if not fn.endswith(".json") or fn == "cards_index.json":
             continue
         try:
             c = json.load(open(os.path.join(dir_path, fn), encoding="utf-8"))
-            fu = datetime.strptime(c["freshness_until"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            fu = parse_rfc3339(c["freshness_until"])
         except Exception:
+            # BUG-13 修复：坏卡/坏时间不静默——计数并警示
+            bad.append(fn)
             continue
         row = {"file": fn, "position": c.get("position"), "trust_level": c.get("trust_level"),
                "freshness_until": c.get("freshness_until")}
@@ -295,7 +349,10 @@ def cmd_scan(dir_path):
             expired.append(row)
         elif fu < warn_before:
             soon.append(row)
-    print(f"保鲜扫描 {dir_path}: 过期 {len(expired)} · 临期60天 {len(soon)}")
+    print(f"保鲜扫描 {dir_path}: 过期 {len(expired)} · 临期60天 {len(soon)}"
+          + (f" · 不可解析 {len(bad)}" if bad else ""))
+    for b in bad:
+        print(f"  ⚠ 不可解析（坏 JSON/坏时间）: {b}")
     for r in expired:
         print(f"  ✗ 已过期须复核: {r['file']} [{r['trust_level']}] 鲜至 {r['freshness_until']}")
     for r in soon:
@@ -308,16 +365,23 @@ def main():
     if not args or args[0] not in ("run", "scan", "reverify"):
         print(__doc__)
         sys.exit(1)
+    # BUG-9 修复：缺参数/悬空 --out——报错退出，不 IndexError 裸崩
+    def need(idx, what):
+        if len(args) <= idx:
+            print(f"✗ 缺参数: {what}")
+            sys.exit(2)
+        return args[idx]
     if args[0] == "run":
-        req = args[1]
+        req = need(1, "run 需要请求文件路径")
         out = "cards"
         if "--out" in args:
-            out = args[args.index("--out") + 1]
+            i = args.index("--out")
+            out = need(i + 1, "--out 需要输出目录")
         cmd_run(req, out)
     elif args[0] == "reverify":
-        cmd_reverify(args[1])
+        cmd_reverify(need(1, "reverify 需要卡目录"))
     else:
-        cmd_scan(args[1])
+        cmd_scan(need(1, "scan 需要卡目录"))
 
 
 if __name__ == "__main__":
