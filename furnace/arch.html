@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信卡熔炉 · 架构 — 五层一口炉</title>
+<meta name="description" content="信卡熔炉架构：信卡库、双闸、心网节点网、保鲜体系、技能熔炼五层，加一条回流通道。">
+<link rel="stylesheet" href="furnace.css">
+</head>
+<body>
+
+<div class="verbar">
+  <div class="wrap">
+    <span><b>🔥 FURNACE</b>&nbsp; 信卡熔炉 · 架构</span>
+    <span><a href="/furnace/">熔炉首页</a> · <a href="/furnace/security.html">安全模型</a> · <a href="/furnace/deploy.html">部署</a> · <a href="/furnace/open.html">开源包</a></span>
+  </div>
+</div>
+
+<header class="wrap">
+  <div class="kicker">ARCHITECTURE</div>
+  <h1>五层一口炉</h1>
+  <p class="lede">信卡熔炉的结构只有五层和一条回流通道：<strong>信卡库</strong>存知识、<strong>双闸</strong>管入口、<strong>心网</strong>连成网、<strong>保鲜</strong>管寿命、<strong>技能熔炼</strong>出成品——实战经验从下游回流，喂回上游。</p>
+</header>
+
+<div class="wrap">
+
+  <h2>五层各管什么</h2>
+  <table>
+    <tr><th>层</th><th>部件</th><th>管什么</th><th>不过这层会怎样</th></tr>
+    <tr><td><b>① 信卡库</b></td><td>md 六要表 + JSON 孪生</td><td>知识本体：源/采/信/鲜/位/证六要素 + 引文指纹</td><td>知识没有户口本——来源不可溯、编造查不出</td></tr>
+    <tr><td><b>② 双闸</b></td><td>background_review</td><td>写入入口：注入改写/身份署名/隐私凭据/立场情绪四类扫描</td><td>敏感内容或指令注入混进库，污染全网</td></tr>
+    <tr><td><b>③ 心网节点网</b></td><td>门类锚点 + META 挂载</td><td>知识的组织：卡挂门类、节点成网、patrol 巡检</td><td>知识是散沙——查不到、连不上、错了没人发现</td></tr>
+    <tr><td><b>④ 保鲜体系</b></td><td>保鲜期分层 + 月扫</td><td>知识的寿命：定律 5 年/定义 3 年/工作法 2 年/经验 1 年</td><td>过期知识当真理用——「已验证」变永久勋章</td></tr>
+    <tr><td><b>⑤ 技能熔炼</b></td><td>骨气三判</td><td>知识的升华：经验提炼成可执行技能</td><td>每次都从头推导，经验不沉淀、用完就丢</td></tr>
+  </table>
+
+  <h2>回流通道：知识的新陈代谢</h2>
+  <div class="step"><b>方法 → 技能 → 实战经验 → 回流方法</b>——熔炉的循环定式。技能是骨架（固化、按需加载），方法是气血（判断、按需提取）；实战经验是回流主燃料，提炼成教训条文后入炉。</div>
+  <p class="dim">详细归位规则见 <a href="/furnace/deploy.html#upgrade">部署页·技能升级三判</a>。</p>
+
+  <h2>与 xinka 标准的接口</h2>
+  <table>
+    <tr><th>熔炉要的</th><th>由标准提供</th></tr>
+    <tr><td>卡的格式合法性</td><td>R1-R10 校验（<code>xinka_check.py</code> / <a href="/validate.html">validate.html</a>）</td></tr>
+    <tr><td>可信等级判定</td><td>R3 置信两档 · R4 三源互证 · R8 独立性 · R9 源分级</td></tr>
+    <tr><td>知识保鲜</td><td>R5 保鲜期字段 + 到期降级</td></tr>
+    <tr><td>防编造防改稿</td><td>R10 引文绑定（逐字引文 + sha256 正文指纹）</td></tr>
+    <tr><td>检索与关联</td><td><code>xinka_query.py</code>（search / neighbors / stats）</td></tr>
+  </table>
+  <p class="dim">一句话：<b>标准定「什么算可信」，熔炉管「可信的知识怎么活」。</b></p>
+
+  <h2>为什么是这个结构</h2>
+  <ul>
+    <li><b>单正本原则</b>：知识全文只存一处（卡库），心网节点只驻指针——两处真理必然打架（双正本=漂移病）。</li>
+    <li><b>守门前置</b>：双闸在写入面，不在查询面——污染进不来，比进来再查更省。</li>
+    <li><b>新陈代谢</b>：保鲜+降级+回流让库会「换血」——死知识排出去，活经验升上来。</li>
+  </ul>
+
+</div>
+
+<footer>
+  信卡熔炉 · <a href="/furnace/">熔炉首页</a> · <a href="/">xinka 标准</a> · Created by <b>Ren Shiliao（任世燎）</b>
+</footer>
+
+</body>
+</html>

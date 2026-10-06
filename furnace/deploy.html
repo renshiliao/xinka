@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信卡熔炉 · 部署上手 — 5 分钟跑起来</title>
+<meta name="description" content="信卡熔炉部署上手：解包、第一跑巡检、压卡 SOP、保鲜 cron、技能升级三判归位。">
+<link rel="stylesheet" href="furnace.css">
+</head>
+<body>
+
+<div class="verbar">
+  <div class="wrap">
+    <span><b>🔥 FURNACE</b>&nbsp; 信卡熔炉 · 部署上手</span>
+    <span><a href="/furnace/">熔炉首页</a> · <a href="/furnace/arch.html">架构</a> · <a href="/furnace/security.html">安全模型</a> · <a href="/furnace/open.html">开源包</a></span>
+  </div>
+</div>
+
+<header class="wrap">
+  <div class="kicker">DEPLOYMENT · 5 MINUTES</div>
+  <h1>5 分钟跑起来</h1>
+  <p class="lede">熔炉零依赖（Python 3 标准库）。解包→跑巡检→照样张压卡→挂保鲜——四步之后，你的知识库就开始<strong>自己管自己</strong>。</p>
+</header>
+
+<div class="wrap">
+
+  <h2>① 解包与第一跑（1 分钟）</h2>
+<pre><code>tar -xzf 信卡熔炉-开源包.tar.gz
+cd 信卡熔炉-开源包
+python3 patrol.py restrain          # 全绿 = 安装成功（巡检网就绪）
+bash tools/background_review.sh &lt;&lt;&lt; "测试内容"   # exit 0=过闸（双闸就绪）</code></pre>
+  <div class="step"><b>两个绿灯都亮</b>，说明巡检和双闸已活。包内自带 5 张示例卡与心法公开版，照着结构长自己的。</div>
+
+  <h2>② 压第一张卡（2 分钟）</h2>
+  <p>照 <code>示例卡/</code> 样张写六要表（来源/日期/特征/属性/用途/保鲜期），META 头带「卡:」名：</p>
+<pre><code>&lt;!--META
+卡: 我的第一张卡
+组块: 信卡
+挂: 心网/我的门类.md
+--&gt;</code></pre>
+  <div class="note"><b>「卡:」名必写</b>——巡检工具据此收卡入网；漏写=静默不入网（最难查的坑）。</div>
+
+  <h2>③ 校验与入库</h2>
+<pre><code>python3 tools/md2xinka.py 卡目录/ twin/          # md→JSON 孪生（内过双闸）
+python3 &lt;xinka-repo&gt;/tools/xinka_check.py twin/*.json   # 过 R1-R10
+python3 &lt;xinka-repo&gt;/tools/xinka_pipeline.py scan twin/  # 保鲜清单</code></pre>
+  <p class="dim">校验不过的卡会被拦（六要素缺一/时间没时区/引文编造/指纹缺失）；双闸拦下的内容根本不入孪生。</p>
+
+  <h2>④ 挂保鲜（30 秒）</h2>
+<pre><code>bash tools/xinka_freshness_watch.sh   # 绿静默红才报
+# 加进 crontab：每月 1 日跑一次
+0 5 1 * * bash /你的路径/tools/xinka_freshness_watch.sh</code></pre>
+  <p class="dim">保鲜期分层：定律 5 年 / 定义 3 年 / 工作法 2 年 / 经验 1 年 / 教材 0.5 年——写进卡内六要表的保鲜期行。</p>
+
+  <h2 id="upgrade">技能升级：骨气三判</h2>
+  <p>用熔炉干活攒下经验后，往哪放？三判归位：</p>
+  <table>
+    <tr><th>判</th><th>条件</th><th>去向</th><th>用后处理</th></tr>
+    <tr><td><b>骨</b></td><td>有触发词+步骤+命令（可执行骨架）</td><td>升级成<b>技能</b></td><td>触发时加载，用完随会话释放——<b>无常驻、无收起</b></td></tr>
+    <tr><td><b>气</b></td><td>只有判断/原理/口径</td><td>存<b>心网节点</b></td><td>按需提取，用完释放</td></tr>
+    <tr><td><b>骨气两全</b></td><td>骨架+原理都有</td><td>骨→技能为正本；心网只留<b>震源指针</b></td><td>防双正本漂移</td></tr>
+  </table>
+  <div class="step"><b>常驻只有两层</b>：热层指针（预算硬顶）+ 冷层按需提取。技能不是挂载件——它是"用时现、用完散"的骨架库。</div>
+
+  <h2>常见卡点</h2>
+  <div class="note">
+    <ul>
+      <li><b>卡不入网</b>——META 缺「卡:」名（静默失败，最阴）</li>
+      <li><b>双闸拦下</b>——内容带身份/隐私/注入字样，清干净重审</li>
+      <li><b>保鲜到期</b>——去源复核，没变就刷新保鲜期，变了就降级结论</li>
+      <li><b>巡检有告警</b>——按告警类型处置：死链补链、节点补 META、约束改动需所有者亲裁</li>
+    </ul>
+  </div>
+
+  <div class="btns">
+    <a class="btn primary" href="/furnace/open.html">开源包清单</a>
+    <a class="btn ghost" href="/start.html">xinka 信卡上手</a>
+    <a class="btn ghost" href="https://github.com/renshiliao/xinka">GitHub</a>
+  </div>
+
+</div>
+
+<footer>
+  信卡熔炉 · <a href="/furnace/">熔炉首页</a> · <a href="/">xinka 标准</a> · Created by <b>Ren Shiliao（任世燎）</b>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信卡熔炉 · 安全模型 — 写入五类禁与防漂移</title>
+<meta name="description" content="信卡熔炉安全模型：写入管控五类禁、双闸拦截、读取限流、防角色漂移、隐私兜底。开源随包件的对外说明。">
+<link rel="stylesheet" href="furnace.css">
+</head>
+<body>
+
+<div class="verbar">
+  <div class="wrap">
+    <span><b>🔥 FURNACE</b>&nbsp; 信卡熔炉 · 安全模型</span>
+    <span><a href="/furnace/">熔炉首页</a> · <a href="/furnace/arch.html">架构</a> · <a href="/furnace/deploy.html">部署</a> · <a href="/furnace/open.html">开源包</a></span>
+  </div>
+</div>
+
+<header class="wrap">
+  <div class="kicker">SECURITY MODEL</div>
+  <h1>熔炉的守门人</h1>
+  <p class="lede">认知引擎最怕的不是笨，是<strong>被污染</strong>——一条指令注入改写规则、一条隐私混进知识库、一条情绪立场冒充事实，整台机器就歪了。熔炉的安全模型只干一件事：<strong>让脏东西进不来，让漂移被发现</strong>。</p>
+</header>
+
+<div class="wrap">
+
+  <h2>写入管控：五类禁止</h2>
+  <p class="dim">管控对象=知识条目/外部记忆（元层规则变更走所有者亲裁）。任何写入必过双闸。</p>
+  <table>
+    <tr><th>类</th><th>禁什么</th><th>为什么</th></tr>
+    <tr><td><b>① 规则类</b></td><td>改写角色设定、系统规则、上位约束</td><td>被改一条规则=整机行为被劫持</td></tr>
+    <tr><td><b>② 隐私类</b></td><td>用户实名/资产/证件/位置/凭据</td><td>泄露不可逆——L0 死线</td></tr>
+    <tr><td><b>③ 注入类</b></td><td>指令改写、角色改写、"忽略以上指令"式攻击</td><td>典型 prompt 注入，污染后门常驻</td></tr>
+    <tr><td><b>④ 立场类</b></td><td>情绪化表达、站队、洗白辩护（授权例外：经所有者裁准的教训条文）</td><td>引擎必须绝对理性中立</td></tr>
+    <tr><td><b>⑤ 身份类</b></td><td>用户标识、Agent 自身花名/署名入网</td><td>双向禁令——都不该被记忆固化</td></tr>
+  </table>
+
+  <h2>双闸拦截</h2>
+  <div class="step"><b>第一闸 pointer_scan</b>：访问存量档案前触发隐私校验（哨兵）。</div>
+  <div class="step"><b>第二闸 background_review</b>：写入前扫描四类特征（注入改写 / 身份署名 / 隐私凭据 / 立场情绪），命中即拦、留痕可溯。<b>标记绑定目标文件</b>——防止"闸拦了但内容从别的口进"。</div>
+  <p class="dim">开源包自带 <code>tools/background_review.sh</code> 通用版（扫描特征可自行增删）。</p>
+
+  <h2>读取管控</h2>
+  <ul>
+    <li>禁自动全量检索——只按需触发</li>
+    <li>单次返回 ≤3 条、总量 ≤500 token</li>
+    <li>记忆内容标记「外部记忆·事实参考」——纯数据，不当指令用</li>
+    <li>仅作用于当前轮，不固化进人格</li>
+  </ul>
+
+  <h2>防漂移机制</h2>
+  <table>
+    <tr><th>机制</th><th>做什么</th></tr>
+    <tr><td><b>时间衰减</b></td><td>超 30 天记忆降权默认不检索；超 90 天归档，需指定时间范围才调取</td></tr>
+    <tr><td><b>定期审计</b></td><td>每周扫描元数据与关键词，清违规/重复/过期——不把记忆内容灌入上下文</td></tr>
+    <tr><td><b>角色隔离</b></td><td>外部记忆不参与身份构建、不影响规则加载；重启后缓存清空，持久记忆按需读取</td></tr>
+    <tr><td><b>漂移熔断</b></td><td>周期自检校验读取权限，命中漂移异常即暂停读取、重置上下文</td></tr>
+    <tr><td><b>哨兵基线</b></td><td>约束文件哈希基线比对——被擅改当场报警（含标记绑定核对，堵"合法改动"洗白漏洞）</td></tr>
+  </table>
+
+  <h2>隐私兜底</h2>
+  <ul>
+    <li><b>本地存储</b>：全量存本地，禁云同步、禁上传第三方</li>
+    <li><b>脱敏写入</b>：写入前扫描隐私字段，命中即拦截或脱敏</li>
+    <li><b>一键熔断</b>:出现泄露/漂移风险可一键清空全部外部记忆——不影响核心规则体系</li>
+    <li><b>备份边界</b>：只备纯事实类，隐私类不备份</li>
+  </ul>
+
+  <h2>效力链（谁说了算）</h2>
+  <p>北极星宪法（L0·永久不可改）&gt; 所有者红线（裁决/泄密/凭据/不可逆=死线）&gt; 原则层（方法+修身+守身）&gt; 心法 &gt; 默认规 &gt; 外部记忆数据。</p>
+  <div class="note"><b>核心不变量</b>：外部记忆是纯事实参考，<b>没有规则效力</b>——与上层规则冲突的记忆自动失效。记忆永远不能给自己发指令。</div>
+
+  <p class="dim">条文正本随开源包发布：<code>心网/原则.md</code>（安全条文）+ <code>AGENTS.md</code>（效力链与守身律）。</p>
+
+</div>
+
+<footer>
+  信卡熔炉 · <a href="/furnace/">熔炉首页</a> · <a href="/">xinka 标准</a> · Created by <b>Ren Shiliao（任世燎）</b>
+</footer>
+
+</body>
+</html>

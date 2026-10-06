@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信卡熔炉 · 开源包 — 随包件与边界</title>
+<meta name="description" content="信卡熔炉开源包清单：安全约束层随包开源，业务卡与认知节点全文不随包——诚实边界声明。">
+<link rel="stylesheet" href="furnace.css">
+</head>
+<body>
+
+<div class="verbar">
+  <div class="wrap">
+    <span><b>🔥 FURNACE</b>&nbsp; 信卡熔炉 · 开源包</span>
+    <span><a href="/furnace/">熔炉首页</a> · <a href="/furnace/arch.html">架构</a> · <a href="/furnace/security.html">安全模型</a> · <a href="/furnace/deploy.html">部署</a></span>
+  </div>
+</div>
+
+<header class="wrap">
+  <div class="kicker">OPEN SOURCE PACKAGE</div>
+  <h1>开源包清单</h1>
+  <p class="lede">熔炉开源的是<strong>安全约束层</strong>——让任何人能搭一台「脏东西进不来、漂移被发现」的认知引擎。你的知识资产（业务卡、认知节点全文）<strong>本来就不该被带走</strong>，它们留在你自己的库里。</p>
+</header>
+
+<div class="wrap">
+
+  <h2>随包开源（14 件）</h2>
+  <table>
+    <tr><th>件</th><th>是什么</th></tr>
+    <tr><td><code>SOUL.md</code></td><td>L0 永久宪法（部署侧可加严，不可放松）</td></tr>
+    <tr><td><code>AGENTS.md</code></td><td>L1 原则层：效力链 + 守身律 + 防篡改三件套</td></tr>
+    <tr><td><code>心网/原则.md</code></td><td><b>安全条文正本</b>：写入五类禁 + 读取限流 + 防漂移 + 隐私兜底</td></tr>
+    <tr><td><code>patrol.py</code></td><td>巡检工具（发现/克制双模式·0 token 纯脚本·路径去本机化）</td></tr>
+    <tr><td><code>tools/background_review.sh</code></td><td>写入双闸（四类特征扫描·通用版可自行增删特征）</td></tr>
+    <tr><td><code>tools/xinka_freshness_watch.sh</code></td><td>保鲜巡检（绿静默红才报·催复核催销账）</td></tr>
+    <tr><td><code>示例卡/</code>（5 张）</td><td>物理信卡样张：光束角换算 / 斜照余弦 / 照度预算表 / 色温分档 / 维护系数——六要表体例可照抄</td></tr>
+    <tr><td><code>心法/</code>（2 篇）</td><td>修身 · 正反引导 公开版（行为范式骨架）</td></tr>
+    <tr><td><code>信卡×心网使用说明.md</code></td><td>四通道契合契约：入网 / 保鲜 / 压卡 / 升级</td></tr>
+    <tr><td><code>README.md</code></td><td>5 分钟上手 + 部署须知 + 常见卡点</td></tr>
+    <tr><td><code>MD5SUMS</code></td><td>全件校验和（部署后可逐件对账）</td></tr>
+  </table>
+
+  <h2>不随包（诚实边界）</h2>
+  <table>
+    <tr><th>不随包</th><th>为什么</th></tr>
+    <tr><td>业务信卡（含报价/业务账）</td><td>使用者的经营数据——隐私档，且是你的知识资产</td></tr>
+    <tr><td>认知节点全文（门类地基/心法正典）</td><td>个人知识体系的主体——开源安全层，不是开源你的脑子</td></tr>
+    <tr><td>内档素材（学科笔记/标准库）</td><td>采集来源的原始材料，各有各的版权与边界</td></tr>
+    <tr><td>技能库全文</td><td>技能是个人工作流固化件，随每个人的活长出来</td></tr>
+  </table>
+  <div class="note"><b>一句话</b>：开源的是<b>炉子</b>（安全约束+工具+样张），不是<b>你炼的东西</b>（业务知识）。这样分，用户装完不失望，你也无泄露风险。</div>
+
+  <h2>剥离保证</h2>
+  <ul>
+    <li>发布前全量扫描：实名/籍贯/住址 · 内网 IP/账号/凭据 · 内部方法名 · 个人任务账 · 本机绝对路径——<b>全零命中</b></li>
+    <li>扫描器特征改<b>通用口径</b>（身份证/手机/凭据句式），不点名任何具体人</li>
+    <li>每次发布制生成（从正本拷贝），不存常驻双份——防漂移</li>
+  </ul>
+
+  <h2>获取与部署</h2>
+<pre><code># 从 GitHub 获取（规范仓库）
+git clone https://github.com/renshiliao/xinka
+# 开源包随 release 分发——部署流程见
+# → /furnace/deploy.html</code></pre>
+
+  <div class="btns">
+    <a class="btn primary" href="/furnace/deploy.html">部署上手</a>
+    <a class="btn ghost" href="/furnace/security.html">安全模型</a>
+    <a class="btn ghost" href="https://github.com/renshiliao/xinka">GitHub</a>
+  </div>
+
+</div>
+
+<footer>
+  信卡熔炉 · <a href="/furnace/">熔炉首页</a> · <a href="/">xinka 标准</a> · Created by <b>Ren Shiliao（任世燎）</b>
+</footer>
+
+</body>
+</html>
