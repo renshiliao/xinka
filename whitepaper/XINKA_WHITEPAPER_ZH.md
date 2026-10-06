@@ -1,6 +1,6 @@
-# Xinka: The Minimal Unit of Trustworthy Knowledge / 信卡：可信知识的最小单元（白皮书·早期草案 v0.1）
+# Xinka: The Minimal Unit of Trustworthy Knowledge / 信卡：可信知识的最小单元（白皮书·早期草案 v0.1·含 v0.2 增补）
 
-> **Status: Early Draft v0.1 · 2026-10 · Created by Ren Shiliao（任世燎）** 欢迎评论与引用。
+> **Status: Early Draft v0.1（含 v0.2 增补：R9 源分级/R10 引文绑定）· 2026-10 · Created by Ren Shiliao（任世燎）** 欢迎评论与引用。
 
 ## 摘要
 
