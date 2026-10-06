@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xinka 上手 — 5 分钟写好第一张信卡</title>
+<meta name="description" content="Xinka 信卡使用说明：5 分钟上手——第一跑巡检、照样张写卡、双闸校验、保鲜复核。新用户第一读。">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --ink:#1a1a2e; --dim:#555; --line:#e2e2ea; --paper:#ffffff; --wash:#fafafa;
+    --acc:#302b63; --gold:#8a6d1f; --gold-bg:#fdf9ec;
+    --serif:"Noto Serif SC","Songti SC","SimSun",Georgia,serif;
+    --sans:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:"SF Mono","Consolas","Courier New",monospace;
+  }
+  body { font-family:var(--sans); color:var(--ink); background:var(--paper); line-height:1.75; font-size:16px; }
+  .wrap { max-width:760px; margin:0 auto; padding:0 24px; }
+  .verbar { border-bottom:1px solid var(--line); background:var(--wash); }
+  .verbar .wrap { display:flex; justify-content:space-between; align-items:center; padding:10px 24px; font-size:.8rem; color:var(--dim); letter-spacing:.5px; flex-wrap:wrap; gap:8px; }
+  .verbar b { color:var(--acc); font-weight:600; letter-spacing:1px; }
+  .verbar a { color:var(--dim); text-decoration:none; border-bottom:1px dotted var(--line); }
+  .verbar a:hover { color:var(--acc); }
+  header { padding:64px 0 48px; border-bottom:1px solid var(--line); }
+  .kicker { font-size:.85rem; letter-spacing:3px; color:var(--gold); margin-bottom:20px; }
+  h1 { font-family:var(--serif); font-size:2.6rem; line-height:1.25; font-weight:700; color:var(--acc); letter-spacing:2px; }
+  .lede { margin-top:22px; font-size:1.1rem; max-width:34em; }
+  h2 { font-family:var(--serif); font-size:1.55rem; color:var(--acc); margin:56px 0 18px; letter-spacing:1px; }
+  h3 { font-size:1.05rem; color:var(--acc); margin:28px 0 10px; }
+  p { margin:12px 0; }
+  .dim { color:var(--dim); font-size:.92rem; }
+  .step { border-left:3px solid var(--gold); background:var(--gold-bg); padding:14px 18px; margin:16px 0; border-radius:0 4px 4px 0; }
+  .step b { color:var(--gold); }
+  pre { background:#1a1a2e; color:#e8e8f0; padding:16px 18px; border-radius:6px; overflow-x:auto; font-family:var(--mono); font-size:.85rem; line-height:1.6; margin:14px 0; }
+  code { font-family:var(--mono); font-size:.88em; background:var(--wash); border:1px solid var(--line); border-radius:3px; padding:1px 6px; }
+  pre code { background:none; border:none; padding:0; }
+  table { width:100%; border-collapse:collapse; margin:18px 0; font-size:.92rem; }
+  th, td { border:1px solid var(--line); padding:10px 12px; text-align:left; vertical-align:top; }
+  th { background:var(--wash); font-weight:600; color:var(--acc); }
+  .warn { border:1px solid var(--gold); background:var(--gold-bg); border-radius:6px; padding:16px 20px; margin:22px 0; }
+  .warn b { color:var(--gold); }
+  ul { padding-left:1.4em; margin:10px 0; }
+  li { margin:6px 0; }
+  footer { border-top:1px solid var(--line); margin-top:64px; padding:28px 0; color:var(--dim); font-size:.85rem; text-align:center; }
+  footer a { color:var(--acc); }
+</style>
+</head>
+<body>
+
+<div class="verbar">
+  <div class="wrap">
+    <span><b>XINKA</b>&nbsp; 上手指南 · 与标准文本 v0.2 同步 · 更新 2026-10-06</span>
+    <span><a href="/">首页</a> · <a href="/whitepaper/">白皮书</a> · <a href="/integrate.html">接入</a> · <a href="/validate.html">校验器</a> · <a href="/users.html">适用人群</a></span>
+  </div>
+</div>
+
+<header class="wrap">
+  <div class="kicker">GETTING STARTED · 5 分钟</div>
+  <h1>从零写好第一张信卡</h1>
+  <p class="lede">信卡不是灵感，是流程。<strong>照这页走一遍</strong>，你的第一条知识就带户口本——源、采、信、鲜、位、证六要素齐备，机器可查，到期会自己喊你复核。</p>
+</header>
+
+<div class="wrap">
+
+  <h2>① 先跑一次巡检（1 分钟）</h2>
+  <p class="dim">装好参考实现后，第一件事是确认环境活的：</p>
+<pre><code>python3 patrol.py restrain          # 全绿 = 安装成功
+python3 tools/xinka_check.py examples/good/good-01.json   # 样例卡应通过校验</code></pre>
+
+  <h2>② 照样张写卡（2 分钟）</h2>
+  <p>信卡就是一张 <strong>JSON</strong>，六个字段缺一不可（<a href="/">首页有完整字段表</a>）。最小骨架：</p>
+<pre><code>{
+  "xinka_version": "0.2",
+  "claim": "照度 E 是单位面积上的光通量，单位勒克斯（lx）。",
+  "position": "physics/lighting/03",
+  "sources": [
+    {"url": "https://...", "tier": "primary", "role": "origin"},
+    {"url": "https://...", "tier": "primary", "role": "corroborator"},
+    {"url": "https://...", "tier": "secondary", "role": "corroborator"}
+  ],
+  "collected": "2026-10-06T12:00:00+08:00",
+  "freshness_until": "2028-10-06T12:00:00+08:00",
+  "trust_level": "verified",
+  "evidence": [
+    {"quote": "照度是照射到表面一点处的面元上的光通量除以该面元的面积",
+     "source_url": "https://...", "sha256": "..."}
+  ],
+  "verification": {"method": "cross-reference", "at": "2026-10-06T12:05:00+08:00"}
+}</code></pre>
+  <p class="dim">体例样张：<code>示例卡/</code>（5 张物理信卡·含六要表 md 版）；规则细节 → <a href="/whitepaper/">白皮书</a>。</p>
+
+  <h2>③ 过校验与双闸（1 分钟）</h2>
+  <div class="step"><b>校验器</b>（R1-R10）：贴进 <a href="/validate.html">validate.html</a> 或跑 <code>tools/xinka_check.py 卡.json</code>——六要素缺一、时间没时区、引文编造、指纹缺失，都当场拦。</div>
+  <div class="step"><b>写入双闸</b>（入库前）：<code>tools/background_review.sh</code> 扫身份/隐私/注入/立场特征，命中即拒——卡写得再好，带敏感内容也不入库。</div>
+<pre><code>cat 我的卡.json | bash tools/background_review.sh 我的卡.json   # exit 0=过闸 2=拦截</code></pre>
+
+  <h2>④ 让卡自己活着（保鲜）</h2>
+  <p>知识有保质期。卡内 <code>freshness_until</code> 一到，系统催复核；复核通过改 <code>verified</code>，失败降级 <code>pending</code>。定期扫描：</p>
+<pre><code>python3 tools/xinka_pipeline.py scan 卡目录/     # 过期/临期清单
+bash tools/xinka_freshness_watch.sh              # 绿静默，红才报</code></pre>
+  <p class="dim">检索自己的卡库：<code>tools/xinka_query.py</code>——<code>search</code> 按名搜卡 · <code>neighbors</code> 看关联链 · <code>stats</code> 看保鲜概览。</p>
+
+  <h2>常见卡点</h2>
+  <div class="warn">
+    <ul>
+      <li><b>校验器说六要素缺一</b>——检查 claim / position / sources / collected / freshness_until / verification 是否都写全，且时间带时区（RFC 3339）。</li>
+      <li><b>R4 拦下（不足 3 源）</b>——verified 卡必须 ≥3 个互不相同来源；不够就先标 <code>pending</code>。</li>
+      <li><b>R8 拦下（同域转载）</b>——三个来源同一个域名=转载互抄，不算互证；换独立来源。</li>
+      <li><b>双闸拦下</b>——内容里带了身份信息/凭据/注入字样；清干净再入库。</li>
+      <li><b>保鲜到期提示</b>——去源头复核一次，确认没变就刷新 <code>freshness_until</code>，变了就改结论。</li>
+    </ul>
+  </div>
+
+  <h2>接着读什么</h2>
+  <ul>
+    <li><a href="/whitepaper/">白皮书</a>——为什么这样设计（信任模型、四机制）</li>
+    <li><a href="/integrate.html">接入</a>——把标准接进 AI（提示词模板 + MCP 插座）</li>
+    <li><a href="/users.html">适用人群</a>——你属于哪类使用者</li>
+    <li><a href="https://github.com/renshiliao/xinka">GitHub 规范仓库</a>——schema、校验器、示例全在这</li>
+  </ul>
+
+</div>
+
+<footer>
+  世界之树 · 基于 <a href="/whitepaper/">Xinka 信卡标准</a> · <a href="/">xinka.ai</a> · Created by <b>Ren Shiliao（任世燎）</b>
+</footer>
+
+</body>
+</html>

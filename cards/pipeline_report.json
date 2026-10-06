@@ -1,0 +1,17 @@
+{
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "warned": 0,
+  "details": [
+    {
+      "claim": "照度单位勒克斯是光通量与面积之比的标准化表达，用于照明工程照度计算与验收判定。",
+      "status": "REJECTED(R9/R10)",
+      "notes": [
+        "R10 源不可达（URLError）——硬拦: https://example.com/a",
+        "R10 源不可达（URLError）——硬拦: https://example.org/b",
+        "R10 源不可达（HTTPError）——硬拦: https://example.net/c"
+      ]
+    }
+  ]
+}
