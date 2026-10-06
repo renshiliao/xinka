@@ -58,6 +58,10 @@ AI 什么都能答，但答案**不敢信、不敢引、不敢用**：引用怕�
 - [x] MCP 插座（[`tools/xinka_mcp.py`](tools/xinka_mcp.py)）+ [接入页](https://xinka.ai/integrate.html)（提示词模板即贴即用）
 - [ ] v1.0 正式化（版本语义冻结·变更流程·贡献者协议）——量柱到位后发布
 
+## Changelog · 更新记录
+
+- **2026-10-06**（[CHANGELOG-20261006.md](CHANGELOG-20261006.md)）：17 项缺陷修复（校验器崩栈/时区/schema 上限、pipeline 写盘顺序/slug 碰撞、域名剥离 bug、MCP 误报、IRI 中文 URL）+ 示例回归集补齐（good 6/6 · bad 7/7）+ 四机制实证批次（R5 保鲜降级真跑 / R9 源分级落卡 / R10 引文绑定+指纹复检三态实弹 / 19 卡体验包·含维护系数新卡）。
+
 ## Validator · 校验器
 
 零依赖（Python 3.8+），开箱即用：
