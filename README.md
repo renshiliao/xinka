@@ -62,6 +62,12 @@ AI 什么都能答，但答案**不敢信、不敢引、不敢用**：引用怕�
 
 - **2026-10-06**（[CHANGELOG-20261006.md](CHANGELOG-20261006.md)）：17 项缺陷修复（校验器崩栈/时区/schema 上限、pipeline 写盘顺序/slug 碰撞、域名剥离 bug、MCP 误报、IRI 中文 URL）+ 示例回归集补齐（good 6/6 · bad 7/7）+ 四机制实证批次（R5 保鲜降级真跑 / R9 源分级落卡 / R10 引文绑定+指纹复检三态实弹 / 19 卡体验包·含维护系数新卡）。
 
+## 使用说明（2026-10-06 补）
+
+- **写卡双闸**：卡内容写盘前过 background_review（身份/隐私/注入/立场扫描），拦下即不入库——`tools/md2xinka.py` 与 `tools/xinka_pipeline.py run` 两处写盘面均已硬接
+- **检索查询**：[`tools/xinka_query.py`](tools/xinka_query.py)——`search <词> <卡目录>` 按名/结论搜卡、`neighbors <编号>` 关联链、`stats` 保鲜概览（含过期催办）
+- **引文绑定**：`bind_quote`（xinka_evidence.py·真网源逐字引文+sha256 指纹）；反爬源走内档快照绑定（`source_form=local-snapshot` 诚实标注）；改卡后重生成孪生会冲掉绑定，须重跑
+
 ## Validator · 校验器
 
 零依赖（Python 3.8+），开箱即用：
