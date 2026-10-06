@@ -263,6 +263,21 @@ def cmd_run(req_path, out_dir):
             continue
         tmp_fn = fn + ".tmp"
         json.dump(card, open(tmp_fn, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+        # 双闸硬接 2026-10-06：pipeline 写卡面同样过 background_review（堵第二条写盘裸奔路径）
+        review = "/opt/data/scripts/background_review.sh"
+        if os.path.exists(review):
+            import subprocess
+            p = subprocess.run(["bash", review, os.path.basename(fn)],
+                               input=json.dumps(card, ensure_ascii=False),
+                               capture_output=True, text=True)
+            if p.returncode != 0:
+                os.remove(tmp_fn)
+                entry["status"] = "REJECTED(双闸)"
+                entry["notes"] = [p.stdout.strip()]
+                report["failed"] += 1
+                report["details"].append(entry)
+                print(f"🚫 [{i}/{len(items)}] 双闸拦下: {entry['claim']}…")
+                continue
         ok, out = run_check(tmp_fn)
         if ok:
             os.replace(tmp_fn, fn)
