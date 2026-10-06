@@ -67,7 +67,12 @@ def normalize(text):
 
 
 def fetch_text(url, timeout=12):
-    """抓取并归一化正文。失败抛异常（调用方硬拦）。"""
+    """抓取并归一化正文。失败抛异常（调用方硬拦）。
+    缺陷修复 2026-10-06：非 ASCII URL（IRI，如百度百科中文路径）先做 percent-编码再请求。"""
+    parsed = urllib.parse.urlparse(url)
+    iri_path = urllib.parse.quote(parsed.path, safe="/%")
+    iri_query = urllib.parse.quote(parsed.query, safe="=&%?")
+    url = urllib.parse.urlunparse(parsed._replace(path=iri_path, query=iri_query))
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         raw = r.read(2_000_000)
