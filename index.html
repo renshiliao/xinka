@@ -3,142 +3,461 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xinka 标准 — 可信知识的记录规范</title>
-<meta name="description" content="Xinka（信卡）：一套开源的可信知识记录规范。不是产品，不是实物卡片——它规定可信的结论该如何记录、如何核验、何时过期。schema 与校验器免费。">
+<title>Xinka 信卡 · 可信知识记录标准 — 开源规范与免费校验器</title>
+<meta name="description" content="Xinka（信卡）是可信知识的最小单元：一条结论按六要素记录——源（出处）、采（采集时间）、信（置信两档）、鲜（保鲜期）、位（位置）、证（互证记录），机器可校验、到期自动降级。开源标准，schema 与校验器免费，公文引用、数据核对、台账留痕可查可溯。">
+<meta name="keywords" content="Xinka,信卡,可信知识,知识记录标准,JSON schema,校验器,引用溯源">
+<link rel="canonical" href="https://xinka.ai/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Xinka 信卡 · 可信知识记录标准">
+<meta property="og:description" content="一条结论配六个要素：源、采、信、鲜、位、证。机器可校验，到期自动降级。开源标准，免费使用。">
+<meta property="og:url" content="https://xinka.ai/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "DefinedTermSet",
+      "@id": "https://xinka.ai/#xinka",
+      "name": "Xinka 信卡标准",
+      "alternateName": ["Xinka", "信卡"],
+      "url": "https://xinka.ai/",
+      "description": "Xinka（信卡）是可信知识的最小单元：一条结论按六个要素记录——源（出处）、采（采集时间）、信（置信两档：已验证/待核验）、鲜（保鲜期）、位（知识树位置）、证（互证记录）。它是一套开源的可信知识记录标准，规定结论如何记录、如何核验、何时过期；不是产品。schema 与校验器免费公开。",
+      "license": "https://github.com/renshiliao/xinka",
+      "inDefinedTermSet": { "@id": "https://xinka.ai/#xinka" },
+      "definedTerm": [
+        {
+          "@type": "DefinedTerm",
+          "name": "源（source_url）",
+          "description": "原始出处 URL。无出处则任何引用不成立，可点可查可回溯。",
+          "termCode": "source_url"
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "采（collected_at）",
+          "description": "采集时刻（RFC 3339 时区格式）。同一网页内容会变，不记采集时间则档案无法复现。",
+          "termCode": "collected_at"
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "信（trust_level）",
+          "description": "置信度两档：verified 已验证（须三个独立来源互证）/ pending 待核验。宁低勿高。",
+          "termCode": "trust_level"
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "鲜（freshness_until）",
+          "description": "保鲜期截止时刻。到期未复核自动降级为待核验，结论不会永远有效。",
+          "termCode": "freshness_until"
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "位（position）",
+          "description": "知识树内坐标，用 / 分层（如 science/chemistry/boiling-point），让结论成体系不成孤岛。",
+          "termCode": "position"
+        },
+        {
+          "@type": "DefinedTerm",
+          "name": "证（verification）",
+          "description": "互证记录：校验方法、参与互证的独立来源列表、校验时刻。孤证不立，机器可查。",
+          "termCode": "verification"
+        }
+      ]
+    },
+    {
+      "@type": "TechArticle",
+      "headline": "Xinka 信卡：可信知识的记录标准（单页说明）",
+      "description": "本页说明 Xinka 信卡标准：为什么 AI 答案需要出处与留痕、六要素定义、十条机器可查规则、九类适用人群、JSON 格式示例、三步上手与边界声明。",
+      "url": "https://xinka.ai/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-10-06",
+      "dateModified": "2026-10-07",
+      "author": { "@type": "Person", "name": "任世燎", "alternateName": "Ren Shiliao" },
+      "mainEntity": { "@id": "https://xinka.ai/#xinka" }
+    }
+  ]
+}
+</script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   :root {
     --ink:#1a1a2e; --dim:#555; --line:#e2e2ea; --paper:#ffffff; --wash:#fafafa;
     --acc:#302b63; --gold:#8a6d1f; --gold-bg:#fdf9ec;
+    --dark:#14161d; --dark-fg:#c9d1d9; --code-bg:#1a1a2e;
     --serif:"Noto Serif SC","Songti SC","SimSun",Georgia,serif;
     --sans:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    --mono:"SF Mono","Consolas","Courier New",monospace;
   }
+  html { scroll-behavior:smooth; }
   body { font-family:var(--sans); color:var(--ink); background:var(--paper); line-height:1.75; font-size:16px; }
-  .wrap { max-width:720px; margin:0 auto; padding:0 24px; }
+  .wrap { max-width:880px; margin:0 auto; padding:0 24px; }
 
-  /* 版本条——标准文本的身份 */
-  .verbar { border-bottom:1px solid var(--line); background:var(--wash); }
-  .verbar .wrap { display:flex; justify-content:space-between; align-items:center; padding:10px 24px; font-size:.8rem; color:var(--dim); letter-spacing:.5px; flex-wrap:wrap; gap:8px; }
-  .verbar b { color:var(--acc); font-weight:600; letter-spacing:1px; }
-  .verbar a { color:var(--dim); text-decoration:none; border-bottom:1px dotted var(--line); }
-  .verbar a:hover { color:var(--acc); }
+  /* 深色头部条——克制的 IT 气质 */
+  .topbar { background:var(--dark); color:var(--dark-fg); font-family:var(--mono); font-size:.8rem; }
+  .topbar .wrap { display:flex; justify-content:space-between; align-items:center; padding:10px 24px; flex-wrap:wrap; gap:8px; }
+  .topbar b { color:#fff; letter-spacing:2px; }
+  .topbar .sep { color:#555; }
+  .topbar a { color:var(--dark-fg); text-decoration:none; border-bottom:1px dotted #444; }
+  .topbar a:hover { color:#fff; }
 
-  /* 首屏——衬线巨题 */
-  header { padding:88px 0 64px; border-bottom:1px solid var(--line); }
-  .kicker { font-size:.85rem; letter-spacing:3px; color:var(--gold); margin-bottom:24px; }
-  h1 { font-family:var(--serif); font-size:3.2rem; line-height:1.25; font-weight:700; color:var(--acc); letter-spacing:2px; }
-  .lede { margin-top:28px; font-size:1.15rem; color:var(--ink); max-width:34em; }
+  /* 首屏——一屏内讲清这是什么 */
+  header { padding:72px 0 48px; border-bottom:1px solid var(--line); }
+  .kicker { font-size:.85rem; letter-spacing:3px; color:var(--gold); margin-bottom:20px; }
+  h1 { font-family:var(--serif); font-size:2.9rem; line-height:1.25; font-weight:700; color:var(--acc); letter-spacing:2px; }
+  .lede { margin-top:24px; font-size:1.12rem; color:var(--ink); max-width:38em; }
   .lede strong { color:var(--acc); }
-  .en { margin-top:12px; font-size:.92rem; color:var(--dim); font-style:italic; }
-  .hero-btns { margin-top:36px; display:flex; gap:12px; flex-wrap:wrap; }
+  .en { margin-top:12px; font-size:.9rem; color:var(--dim); font-family:var(--mono); }
+
+  /* 页内目录——锚点跳段 */
+  nav.toc { border-bottom:1px solid var(--line); background:var(--wash); }
+  nav.toc .wrap { padding:14px 24px; }
+  nav.toc .toc-title { font-size:.78rem; letter-spacing:2px; color:var(--dim); margin-bottom:8px; }
+  nav.toc ol { list-style:none; display:flex; flex-wrap:wrap; gap:8px; }
+  nav.toc a { display:inline-block; padding:5px 14px; border:1px solid var(--line); border-radius:999px; background:var(--paper);
+    font-size:.85rem; color:var(--acc); text-decoration:none; }
+  nav.toc a:hover { border-color:var(--acc); }
+
+  section { padding:52px 0; border-bottom:1px solid var(--line); }
+  .secnum { font-size:.8rem; letter-spacing:2px; color:var(--dim); margin-bottom:8px; font-family:var(--mono); }
+  h2 { font-family:var(--serif); font-size:1.6rem; color:var(--acc); font-weight:700; margin-bottom:18px; letter-spacing:1px; }
+  h3 { font-size:1rem; color:var(--acc); margin:22px 0 10px; }
+  p { margin:12px 0; }
+  p.dim { color:var(--dim); font-size:.95rem; }
+  a.inline { color:var(--acc); }
+
+  /* 规格表 */
+  .tblwrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:22px; }
+  table { width:100%; border-collapse:collapse; font-size:.93rem; min-width:560px; }
+  th,td { padding:12px 14px; text-align:left; border:1px solid var(--line); vertical-align:top; }
+  th { background:var(--wash); font-weight:600; color:var(--acc); font-size:.85rem; letter-spacing:1px; white-space:nowrap; }
+  td:first-child { font-family:var(--serif); font-weight:700; color:var(--acc); white-space:nowrap; }
+  td code, p code, li code { font-family:var(--mono); font-size:.85em; background:var(--wash); padding:1px 6px; border:1px solid var(--line); border-radius:3px; }
+
+  /* 代码 / schema 卡片 */
+  pre { background:var(--code-bg); color:#e8e8f0; padding:16px 18px; border-radius:6px; overflow-x:auto;
+    font-family:var(--mono); font-size:.83rem; line-height:1.6; margin:14px 0; }
+  pre code { background:none; border:none; padding:0; font-family:inherit; color:inherit; }
+  .card-label { font-family:var(--mono); font-size:.75rem; letter-spacing:2px; color:var(--dim); margin-top:20px; }
+  .copybtn { font-family:var(--mono); font-size:.8rem; padding:6px 16px; border:1px solid var(--acc); border-radius:4px;
+    background:var(--paper); color:var(--acc); cursor:pointer; margin:6px 0; }
+  .copybtn:hover { background:var(--wash); }
+
+  /* 是/不是——双栏 */
+  .isnot { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-top:22px; }
+  .isnot > div { padding:22px 24px; }
+  .isnot .is { background:var(--paper); border-right:1px solid var(--line); }
+  .isnot .no { background:var(--wash); }
+  .isnot h3 { font-size:.92rem; letter-spacing:2px; margin-bottom:12px; font-weight:600; }
+  .isnot .is h3 { color:var(--acc); }
+  .isnot .no h3 { color:var(--gold); }
+  .isnot li { margin:9px 0 9px 18px; font-size:.93rem; }
+  .isnot .no li { color:var(--dim); }
+
+  /* 规则清单 */
+  .rules { margin-top:18px; border-top:1px solid var(--line); }
+  .rule { display:flex; gap:14px; padding:11px 4px; border-bottom:1px solid var(--line); font-size:.92rem; align-items:baseline; }
+  .rule .rid { font-family:var(--mono); font-weight:700; color:var(--acc); min-width:3em; }
+  .rule .rdesc b { color:var(--gold); font-weight:600; }
+
+  /* 人群条目 */
+  .persona { display:grid; grid-template-columns:150px 1fr; gap:0; border:1px solid var(--line); border-radius:6px; margin:16px 0; overflow:hidden; }
+  .persona .who { background:var(--wash); padding:20px; border-right:1px solid var(--line); }
+  .persona .who .icon { font-size:1.4rem; margin-bottom:6px; }
+  .persona h3.name { font-family:var(--serif); font-weight:700; color:var(--acc); font-size:1.02rem; margin:0; }
+  .persona .body { padding:16px 22px; }
+  .persona .body .row { margin:6px 0; font-size:.92rem; }
+  .persona .body .tag { display:inline-block; font-size:.75rem; letter-spacing:1px; color:var(--dim); border:1px solid var(--line); border-radius:3px; padding:0 8px; margin-right:8px; vertical-align:1px; }
+  .persona .body .one { margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); font-family:var(--serif); color:var(--gold); font-size:.96rem; }
+
+  /* 三步 */
+  .steps { counter-reset:step; margin-top:18px; }
+  .step { display:flex; gap:18px; padding:14px 4px; border-bottom:1px solid var(--line); align-items:baseline; }
+  .step::before { counter-increment:step; content:counter(step,decimal-leading-zero); font-family:var(--mono); font-size:1.15rem; font-weight:700; color:var(--acc); min-width:2.2em; }
+  .step .st { font-size:.95rem; }
+  .step .st b { color:var(--acc); }
+
+  blockquote { border-left:3px solid var(--acc); padding:8px 24px; margin:26px 0; font-family:var(--serif); font-size:1.1rem; color:var(--acc); }
+
+  /* 底部行动区 */
+  .cta { padding:52px 0; }
+  .btns { display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
   .btn { display:inline-block; padding:12px 26px; border:1px solid var(--acc); border-radius:4px; text-decoration:none; font-size:.95rem; transition:all .15s; }
   .btn.primary { background:var(--acc); color:#fff; }
   .btn.primary:hover { background:#241f4d; }
   .btn.ghost { color:var(--acc); background:transparent; }
   .btn.ghost:hover { background:var(--wash); }
 
-  /* 章节——文档式 */
-  section { padding:56px 0; border-bottom:1px solid var(--line); }
-  .secnum { font-size:.8rem; letter-spacing:2px; color:var(--dim); margin-bottom:8px; }
-  h2 { font-family:var(--serif); font-size:1.65rem; color:var(--acc); font-weight:700; margin-bottom:20px; letter-spacing:1px; }
-  p { margin:12px 0; color:var(--ink); }
-  p.dim { color:var(--dim); font-size:.95rem; }
-
-  /* 是/不是——规格双栏 */
-  .isnot { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-top:24px; }
-  .isnot > div { padding:24px; }
-  .isnot .is { background:var(--paper); border-right:1px solid var(--line); }
-  .isnot .isnot2 { background:var(--wash); }
-  .isnot h3 { font-size:.95rem; letter-spacing:2px; margin-bottom:14px; font-weight:600; }
-  .isnot .is h3 { color:var(--acc); }
-  .isnot .isnot2 h3 { color:var(--gold); }
-  .isnot li { margin:10px 0 10px 18px; font-size:.93rem; }
-  .isnot .isnot2 li { color:var(--dim); }
-
-  /* 六要素——规格表（去卡片化） */
-  table { width:100%; border-collapse:collapse; margin-top:24px; font-size:.93rem; }
-  th,td { padding:12px 14px; text-align:left; border:1px solid var(--line); vertical-align:top; }
-  th { background:var(--wash); font-weight:600; color:var(--acc); font-size:.85rem; letter-spacing:1px; }
-  td:first-child { font-family:var(--serif); font-weight:700; color:var(--acc); white-space:nowrap; }
-  td code { font-size:.85rem; background:var(--wash); padding:1px 6px; border:1px solid var(--line); border-radius:3px; }
-
-  /* 规则清单 */
-  .rules { margin-top:20px; border-top:1px solid var(--line); }
-  .rule { display:flex; gap:14px; padding:12px 4px; border-bottom:1px solid var(--line); font-size:.92rem; align-items:baseline; }
-  .rule .rid { font-family:var(--serif); font-weight:700; color:var(--acc); min-width:3.2em; }
-  .rule .rdesc { color:var(--ink); }
-  .rule .rdesc b { color:var(--gold); font-weight:600; }
-
-  /* 对比 */
-  .compare td.gold { background:var(--gold-bg); color:#6b5518; }
-
-  /* 引言块 */
-  blockquote { border-left:3px solid var(--acc); padding:8px 24px; margin:28px 0; font-family:var(--serif); font-size:1.12rem; color:var(--acc); }
-
-  /* CTA */
-  .cta { padding:56px 0; }
-  .cta h2 { text-align:left; }
-  .cta .btns { display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; }
-
   footer { border-top:1px solid var(--line); background:var(--wash); padding:28px 24px; text-align:center; font-size:.82rem; color:var(--dim); }
   footer a { color:var(--acc); text-decoration:none; border-bottom:1px dotted var(--line); }
+  footer .sign { margin-top:8px; }
 
-  @media(max-width:640px){
-    h1 { font-size:2.15rem; letter-spacing:1px; }
-    header { padding:56px 0 40px; }
+  /* 断点：手机单栏流式 */
+  @media(max-width:760px){
+    header { padding:48px 0 36px; }
+    h1 { font-size:2rem; letter-spacing:1px; }
+    .lede { font-size:1.02rem; }
+    section { padding:40px 0; }
+    h2 { font-size:1.35rem; }
     .isnot { grid-template-columns:1fr; }
     .isnot .is { border-right:none; border-bottom:1px solid var(--line); }
+    .persona { grid-template-columns:1fr; }
+    .persona .who { border-right:none; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; padding:14px 20px; }
+    .persona .who .icon { margin-bottom:0; }
     table { font-size:.86rem; }
     th,td { padding:9px 10px; }
+    pre { font-size:.78rem; padding:14px; }
+    .topbar .wrap { justify-content:center; text-align:center; }
   }
 </style>
 </head>
 <body>
 
-<div class="verbar">
+<div class="topbar">
   <div class="wrap">
-    <span><b>XINKA</b>&nbsp; 标准文本 · Early Draft v0.2 · 更新 2026-10-06（<a href="/CHANGELOG-20261006.md">本次更新</a>）</span>
-    <span><a href="/start.html">上手</a> · <a href="/users.html">适用人群</a> · <a href="/tree.html">🌳 世界之树</a> · <a href="https://github.com/renshiliao/xinka">规范仓库</a> · <a href="/integrate.html">接入</a></span>
+    <span><b>XINKA</b>&nbsp; 可信知识记录标准 · Early Draft v0.2 · 更新 2026-10-07</span>
+    <span><a href="/tree.html">🌳 世界之树</a> <span class="sep">·</span> <a href="/whitepaper/">白皮书</a> <span class="sep">·</span> <a href="/validate.html">校验器</a> <span class="sep">·</span> <a href="https://github.com/renshiliao/xinka">GitHub</a></span>
   </div>
 </div>
 
-<header>
+<header id="top">
   <div class="wrap">
-    <div class="kicker">可信知识的记录规范 · 开源</div>
-    <h1>信卡不是卡。<br>它是一套标准。</h1>
-    <p class="lede">Xinka 规定<strong>可信的结论该如何记录、如何核验、何时过期</strong>。它不是产品，不是实物卡片——是一份写在 schema 里、执行在校验器里的公开规程。谁都可以免费查、免费用、免费验。</p>
-    <p class="en">Xinka: The Minimal Unit of Trustworthy Knowledge — a standard, not a product.</p>
-    <div class="hero-btns">
+    <div class="kicker">可信知识的记录标准 · 开源</div>
+    <h1>信卡不是卡，<br>是一套记录标准。</h1>
+    <p class="lede">Xinka（信卡）规定<strong>一条结论要记什么、怎么核、何时作废</strong>：出处、采集时间、置信档、保鲜期、位置、核验记录，六个要素缺一不可。它写在 JSON schema 里，执行在校验器里——谁都可以免费查、免费用、免费验。</p>
+    <p class="en">Xinka: The Minimal Unit of Trustworthy Knowledge</p>
+    <div class="btns">
       <a class="btn primary" href="/whitepaper/">阅读白皮书</a>
-      <a class="btn ghost" href="/validate.html">试用校验器</a>
-      <a class="btn ghost" href="/tree.html">🌳 世界之树</a>
-      <a class="btn ghost" href="/integrate.html">接入标准</a>
+      <a class="btn ghost" href="/validate.html">在线校验器</a>
+      <a class="btn ghost" href="#howto">三步上手</a>
     </div>
   </div>
 </header>
 
-<section>
+<nav class="toc" aria-label="页内目录">
   <div class="wrap">
-    <div class="secnum">§ 1 · 问题</div>
-    <h2>AI 说的话，凭什么敢信？</h2>
-    <p>大模型什么都答得出来——但引用怕编造、数据怕幻觉、决策怕翻车。答案说得头头是道，却<strong>不敢信、不敢引、不敢用</strong>。</p>
-    <p>症结不在模型会不会说，而在结论<strong>无凭无据</strong>：不知从哪来、不知何时采、不知多可信、不知何时过期。Xinka 给每条结论一份规范档案——六要素，一个不少。</p>
-    <table>
-      <tr><th>要素</th><th>字段</th><th>记什么</th><th>怎么核</th></tr>
-      <tr><td>【源】</td><td><code>source_url</code></td><td>原始出处，可点可查可回溯</td><td>R7 出处格式 · R8 独立性 · R9 源分级</td></tr>
-      <tr><td>【采】</td><td><code>collected_at</code></td><td>采集时刻——同一页会变，不记时间不可复现</td><td>R2 时序合法</td></tr>
-      <tr><td>【信】</td><td><code>trust_level</code></td><td>两档置信：已验证 / 待核验</td><td>R3 两档制 · R4 三源互证</td></tr>
-      <tr><td>【鲜】</td><td><code>freshness_until</code></td><td>保鲜期——到期自动降级，徽章不永久</td><td>R5 到期降级</td></tr>
-      <tr><td>【位】</td><td><code>position</code></td><td>知识树坐标，成体系不成孤岛</td><td>R7 坐标格式</td></tr>
-      <tr><td>【证】</td><td><code>verification</code></td><td>互证记录：方法、参与来源、校验时刻</td><td>R6 校验时序 · R10 引文绑定</td></tr>
-    </table>
+    <div class="toc-title">页内目录（点击直达本页段落）</div>
+    <ol>
+      <li><a href="#why">① 为什么需要</a></li>
+      <li><a href="#elements">② 信卡六要素</a></li>
+      <li><a href="#rules">③ 十条规则</a></li>
+      <li><a href="#users">④ 给谁用</a></li>
+      <li><a href="#format">⑤ 格式示例</a></li>
+      <li><a href="#howto">⑥ 怎么用</a></li>
+      <li><a href="#boundary">⑦ 边界声明</a></li>
+      <li><a href="#validate">⑧ 在线校验</a></li>
+    </ol>
+  </div>
+</nav>
+
+<main>
+
+<section id="why">
+  <div class="wrap">
+    <div class="secnum">§ 1 · 为什么需要</div>
+    <h2>AI 写得快，但引用不敢直接用</h2>
+    <p>用 AI 起草材料越来越常见，可材料里的数字和引用没人敢直接采信：<strong>出处没写清、口径没标年份、数据没核对</strong>。公文引用要经得起追问，数据核对要有据可查，台账要留痕备查——出了错，要能追到是哪一步、依据是什么、谁核的。</p>
+    <p>问题不在模型会不会说，而在结论<strong>无凭无据</strong>：不知道从哪个网页抄的、不知道哪天采的、不知道几个来源核过、不知道这条数据什么时候会过期。答案说得头头是道，却不敢信、不敢引、不敢用。</p>
+    <p>Xinka 给每条结论立一份规范档案——六个要素，机器可查；到日子没复核，置信档自动降下来，不会「一条数据用十年」。</p>
   </div>
 </section>
 
-<section>
+<section id="elements">
   <div class="wrap">
-    <div class="secnum">§ 2 · 定位</div>
-    <h2>是什么，不是什么</h2>
+    <div class="secnum">§ 2 · 六要素</div>
+    <h2>信卡六要素</h2>
+    <p class="dim">一条结论 = 一句断言 + 以下六项记录。字段名即 JSON 键名，中英对照，机器与人读同一份。</p>
+    <div class="tblwrap">
+      <table>
+        <tr><th>要素</th><th>字段</th><th>记什么</th><th>怎么核</th></tr>
+        <tr><td>【源】</td><td><code>source_url</code></td><td>原始出处，可点可查可回溯</td><td>R7 出处格式 · R8 独立性 · R9 源分级</td></tr>
+        <tr><td>【采】</td><td><code>collected_at</code></td><td>采集时刻——同一页会变，不记时间不可复现</td><td>R2 时序合法</td></tr>
+        <tr><td>【信】</td><td><code>trust_level</code></td><td>两档置信：已验证 / 待核验</td><td>R3 两档制 · R4 三源互证</td></tr>
+        <tr><td>【鲜】</td><td><code>freshness_until</code></td><td>保鲜期——到期未复核自动降级</td><td>R5 到期降级</td></tr>
+        <tr><td>【位】</td><td><code>position</code></td><td>知识树坐标（如 <code>gov/docs/cite</code>），成体系不成孤岛</td><td>R7 坐标格式</td></tr>
+        <tr><td>【证】</td><td><code>verification</code></td><td>互证记录：方法、参与来源、校验时刻</td><td>R6 校验时序 · R10 引文绑定</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="rules">
+  <div class="wrap">
+    <div class="secnum">§ 3 · 规则</div>
+    <h2>十条规则，机器可查</h2>
+    <p>「已验证」不是一个说法，是一组机器可查的条件：六要素齐备、时间合法、三源互证、引文逐字绑定、正文指纹入档——<strong>编造的引用过不了关，改过的来源查得出指纹</strong>。</p>
+    <div class="rules">
+      <div class="rule"><span class="rid">R1</span><span class="rdesc">六要素必填齐备</span></div>
+      <div class="rule"><span class="rid">R2</span><span class="rdesc">时间合法，采集早于保鲜期</span></div>
+      <div class="rule"><span class="rid">R3</span><span class="rdesc">置信仅两档，宁低勿高</span></div>
+      <div class="rule"><span class="rid">R4</span><span class="rdesc">已验证须 ≥3 个<b>互不相同</b>的来源</span></div>
+      <div class="rule"><span class="rid">R5</span><span class="rdesc">保鲜到期自动降级</span></div>
+      <div class="rule"><span class="rid">R6</span><span class="rdesc">校验时序合法</span></div>
+      <div class="rule"><span class="rid">R7</span><span class="rdesc">出处与坐标格式合法</span></div>
+      <div class="rule"><span class="rid">R8</span><span class="rdesc">独立性：<b>三个来源同域名 = 转载互抄</b>，不算互证，拦下</span></div>
+      <div class="rule"><span class="rid">R9</span><span class="rdesc">源分级：已验证须含 ≥1 <b>一手来源</b></span></div>
+      <div class="rule"><span class="rid">R10</span><span class="rdesc">引文绑定：逐字引文 + <b>SHA-256 正文指纹</b></span></div>
+    </div>
+    <p class="dim" style="margin-top:16px;">复检随时可跑：重新抓取来源、比对指纹——源改稿现形，引文蒸发即降级。规则全文与参考实现在 <a class="inline" href="https://github.com/renshiliao/xinka">GitHub</a>，在线校验见 <a class="inline" href="/validate.html">validate.html</a>。</p>
+  </div>
+</section>
+
+<section id="users">
+  <div class="wrap">
+    <div class="secnum">§ 4 · 适用人群</div>
+    <h2>给谁用</h2>
+    <p class="dim">凡是要被引用、被决策、被追责的结论，都适用。纯文本规程，粘贴即用，无需安装。</p>
+
+    <div class="persona">
+      <div class="who"><div class="icon">💼</div><h3 class="name">文员 · 行政</h3></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>写报告引用数据怕被问「哪来的」、公文口径对不上</div>
+        <div class="row"><span class="tag">用法</span>报告数据行脚注一行【源｜采｜信】；对外材料只放【已验证】数字；汇编台账按信卡格式留档，交接不丢账</div>
+        <div class="one">报告里的每个数字都带出处，领导问来源，一指即答。</div>
+      </div>
+    </div>
+    <div class="persona">
+      <div class="who"><div class="icon">⚖️</div><h3 class="name">律师 · 法务</h3></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>法条引用须精确到条、司法解释更替频繁、尽调底稿要经得起复核</div>
+        <div class="row"><span class="tag">用法</span>法条引用带文号+施行日期+修订状态；尽调结论按信卡归档——谁、何时、依什么源下的判断，全程留痕</div>
+        <div class="one">可追溯的尽调底稿，本身就是专业价值。</div>
+      </div>
+    </div>
+    <div class="persona">
+      <div class="who"><div class="icon">🎓</div><h3 class="name">学生</h3></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>论文引用怕编造、网查资料分不清真假、答辩被问「出处呢」</div>
+        <div class="row"><span class="tag">用法</span>查资料时让 AI 按信卡格式输出——每条结论挂【源】【信】【鲜】；写论文只引【已验证·三源】条目，【待核验】的要么补齐要么删</div>
+        <div class="one">出处没写全的段落，就是风险点。</div>
+      </div>
+    </div>
+    <div class="persona">
+      <div class="who"><div class="icon">👨‍🏫</div><h3 class="name">教师 · 学者</h3></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>课件数据年份混乱、案例来源不明、讲错了没人提醒</div>
+        <div class="row"><span class="tag">用法</span>课件每页数据标注来源与年份；学期末跑一次保鲜复核——去年的市占率今年可能就变了</div>
+        <div class="one">口径带年份，是学者对学生的最低负责。</div>
+      </div>
+    </div>
+    <div class="persona">
+      <div class="who"><div class="icon">🩺</div><h3 class="name">医生 · 医学生</h3></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>指南更新快、剂量数据错不起、患者问「网上说」分不清源</div>
+        <div class="row"><span class="tag">用法</span>诊疗参考只用【已验证】条目，一手源为指南原文/药品说明书；患者科普材料每句带出处，宁标【待核验】不给确定答案</div>
+        <div class="one">在错不起的地方，孤证不立就是行医纪律。</div>
+      </div>
+    </div>
+    <div class="persona">
+      <div class="who"><div class="icon">📰</div><h3 class="name">媒体 · 编辑</h3></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>抢时效怕翻车、转载改稿查不到原文、被指「假新闻」</div>
+        <div class="row"><span class="tag">用法</span>发稿前把关键断言按三源核对；存一份引文+抓取日期（指纹），事后改稿争议有据可查</div>
+        <div class="one">翻车时，指纹比记忆可靠。</div>
+      </div>
+    </div>
+    <div class="persona">
+      <div class="who"><div class="icon">📈</div><h3 class="name">金融 · 投资</h3></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>财报口径杂、卖方报告二手三手、复盘找不到当时的依据</div>
+        <div class="row"><span class="tag">用法</span>研报数字只收一手源（交易所披露/年报）标【已验证】；传闻一律【待核验】不入决策；建自己的信卡库，复盘连当时的证据一起回看</div>
+        <div class="one">决策的依据和决策本身一样重要。</div>
+      </div>
+    </div>
+    <div class="persona">
+      <div class="who"><div class="icon">🏗️</div><h3 class="name">设计师 · 工程师</h3></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>产品参数各说各话、标准条文会换版、给客户的报告要有据可依</div>
+        <div class="row"><span class="tag">用法</span>选型结论按信卡归档（参数等硬数字带源）；国标引用标标准号+年份+现行状态；对外报告挂信卡附录</div>
+        <div class="one">报告里的每个参数，都能翻出出处。</div>
+      </div>
+    </div>
+    <div class="persona">
+      <div class="who"><div class="icon">🤖</div><h3 class="name">AI 从业者</h3></div>
+      <div class="body">
+        <div class="row"><span class="tag">痛点</span>AI 输出没法验、幻觉无凭、接了大模型不敢用在正经场景</div>
+        <div class="row"><span class="tag">用法</span>让 AI 输出信卡 JSON（<a class="inline" href="#howto">提示词模板</a>见下方「怎么用」）；校验器把关 R1-R10；MCP 插座直连</div>
+        <div class="one">从「看着像对」到「可以查」，中间隔着一套记录规范。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="format">
+  <div class="wrap">
+    <div class="secnum">§ 5 · 格式示例</div>
+    <h2>同一条知识，两种呈现</h2>
+    <p>给机器的是一段 JSON，给人的是一张表——<strong>内容完全一致</strong>。机器能读、人能看懂，AI 才能照着作业、人才能逐条核对。</p>
+
+    <div class="card-label">机器可读 · JSON（xinka v0.2 片段）</div>
+<pre><code>{
+  "xinka_version": "0.2",
+  "claim": "在标准大气压下，纯水的沸点约为 100 °C；海拔升高气压降低，沸点随之下降。",
+  "source_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Type=TBOIL",
+  "collected_at": "2026-10-01T10:30:00+08:00",
+  "trust_level": "verified",
+  "freshness_until": "2028-10-01T00:00:00+08:00",
+  "position": "science/chemistry/boiling-point",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [
+      "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Type=TBOIL",
+      "https://britannica.com/science/boiling-point",
+      "https://en.wikipedia.org/wiki/Boiling_point"
+    ],
+    "checked_at": "2026-10-01T12:30:00+08:00"
+  }
+}</code></pre>
+
+    <div class="card-label">人可读 · 六要素表（同一条知识）</div>
+    <div class="tblwrap">
+      <table>
+        <tr><th>要素</th><th>内容</th></tr>
+        <tr><td>结论</td><td>标准大气压下纯水沸点约 100 °C，海拔升高沸点下降</td></tr>
+        <tr><td>【源】</td><td>webbook.nist.gov（美国国家标准与技术研究院）等 3 个独立来源</td></tr>
+        <tr><td>【采】</td><td>2026-10-01 10:30（东八区）</td></tr>
+        <tr><td>【信】</td><td>已验证（三源互证，域名互不相同）</td></tr>
+        <tr><td>【鲜】</td><td>保鲜至 2028-10-01，到期未复核自动降为待核验</td></tr>
+        <tr><td>【位】</td><td>science/chemistry/boiling-point</td></tr>
+        <tr><td>【证】</td><td>三源交叉核对，校验于 2026-10-01 12:30</td></tr>
+      </table>
+    </div>
+    <p class="dim">完整字段与约束见 <a class="inline" href="https://github.com/renshiliao/xinka/blob/main/schema/xinka-0.2.schema.json">schema xinka-0.2</a>，可直接贴进下方校验器试跑。</p>
+  </div>
+</section>
+
+<section id="howto">
+  <div class="wrap">
+    <div class="secnum">§ 6 · 怎么用</div>
+    <h2>三步上手</h2>
+    <div class="steps">
+      <div class="step"><div class="st"><b>起步</b>：把下面的提示词模板贴给 AI（豆包/千问/DeepSeek/Claude 通用），派活时加一句「按信卡标准输出」。</div></div>
+      <div class="step"><div class="st"><b>把关</b>：结论交校验器（<a class="inline" href="/validate.html">validate.html</a> 或本地命令 <code>python3 tools/xinka_check.py 卡.json</code>）——孤证、编造、过期自动拦。</div></div>
+      <div class="step"><div class="st"><b>积累</b>：过卡结论入自己的库（文档、表格都行），到期条目按时复核——用得越久，档案越扎实。</div></div>
+    </div>
+
+    <div class="card-label">提示词模板 · 一键复制发给任何 AI</div>
+    <button class="copybtn" type="button" onclick="copyText('promptBox', this)">复制提示词模板</button>
+    <pre id="promptBox"><code>你是「持证资料员」，在 Xinka（信卡）标准下作业。可信知识的最小单元=信卡，六要素：源/采/信/鲜/位/证。
+
+【作业铁律】
+1. 无源不言：凡数字、日期、口径、承诺类断言，必须给真实出处 URL；查不到写「待查」，绝不编造 URL。
+2. 孤证不立：单源断言只标 pending（待核验）；升 verified（已验证）须 ≥3 个独立来源互证（同一篇文章的转载不算独立）。
+3. 时效入账：每条断言标采集日期；时效性强的（市占率/价格/榜单）保鲜 1 年，机制性事实可 3-5 年。
+4. 口径带年份：「连续 N 年第一」类断言必须写明口径来源与截止年份。
+5. 档位诚实：证据不够就降档并说明缺什么。宁可标低，不可标高。
+
+【输出格式】每条断言一张卡：
+{"xinka_version":"0.2","claim":"断言句","source_url":"主源","collected_at":"RFC3339","trust_level":"verified|pending","freshness_until":"RFC3339","position":"树内坐标/小写分层","verification":{"method":"three-source cross-check","sources":["源1","源2","源3"],"checked_at":"RFC3339或null"}}
+
+【自检】交卷前过一遍：每条有真源？verified 三源是不同域名？时间字段合法？数字类至少一个官方/一手源？
+【边界】「今天周几」之类无风险的话不需要信卡；信卡用在错不起的断言上。</code></pre>
+    <p class="dim">模板原文可下载：<a class="inline" href="/prompts/XINKA_AGENT_PROMPT.md">XINKA_AGENT_PROMPT.md</a>；命令行、MCP 插座等接入方式见 <a class="inline" href="https://github.com/renshiliao/xinka">GitHub 规范仓库</a>。</p>
+  </div>
+</section>
+
+<section id="boundary">
+  <div class="wrap">
+    <div class="secnum">§ 7 · 边界</div>
+    <h2>这个标准不做什么</h2>
     <p class="dim">一个方法、一份标准，就该把边界说在前面。</p>
     <div class="isnot">
       <div class="is">
@@ -150,13 +469,12 @@
           <li>一份可被任何 AI、任何系统<strong>复用的规程</strong></li>
         </ul>
       </div>
-      <div class="isnot2">
+      <div class="no">
         <h3>XINKA 不是</h3>
         <ul>
-          <li>不是产品，不是实物卡片——不卖盒子，不卖会员</li>
-          <li>不承诺「永远正确」——三源同错也会照实记录</li>
-          <li>不是核查公司——标准与工具全部公开，谁都能验</li>
-          <li>不采集您的数据——校验在本地/浏览器内完成</li>
+          <li>不承诺「永远正确」——三源同错也会照实记录；承诺的是<strong>错了查得清、追得回</strong></li>
+          <li>不是核查机构——标准与工具全部公开，谁都能复核</li>
+          <li>不采集您的数据——校验在本地或浏览器内完成，复制带走即归您</li>
         </ul>
       </div>
     </div>
@@ -164,61 +482,48 @@
   </div>
 </section>
 
-<section>
+<section id="validate" class="cta">
   <div class="wrap">
-    <div class="secnum">§ 3 · 规程</div>
-    <h2>六要素，十条规则，三个独立来源</h2>
-    <p>「已验证」不是一个说法，是一组机器可查的条件：六要素齐备、时间合法、三源互证、引文逐字绑定、正文指纹入档——<strong>编造的引用过不了关，改过的来源查得出指纹</strong>。</p>
-    <div class="rules">
-      <div class="rule"><span class="rid">R1</span><span class="rdesc">六要素必填齐备</span></div>
-      <div class="rule"><span class="rid">R2</span><span class="rdesc">时间合法，采集早于保鲜期</span></div>
-      <div class="rule"><span class="rid">R3</span><span class="rdesc">置信仅两档，宁低勿高</span></div>
-      <div class="rule"><span class="rid">R4</span><span class="rdesc">已验证须 ≥3 个<b>互不相同</b>的来源</span></div>
-      <div class="rule"><span class="rid">R5</span><span class="rdesc">保鲜到期自动降级</span></div>
-      <div class="rule"><span class="rid">R6</span><span class="rdesc">校验时序合法</span></div>
-      <div class="rule"><span class="rid">R7</span><span class="rdesc">出处与坐标格式合法</span></div>
-      <div class="rule"><span class="rid">R8</span><span class="rdesc">独立性：<b>三源同域名=转载互抄</b>，拦下</span></div>
-      <div class="rule"><span class="rid">R9</span><span class="rdesc">源分级：已验证须含 ≥1 <b>一手来源</b></span></div>
-      <div class="rule"><span class="rid">R10</span><span class="rdesc">引文绑定：逐字引文 + <b>SHA-256 正文指纹</b></span></div>
-    </div>
-    <p class="dim" style="margin-top:18px;">复检命令随时可跑：重新抓取来源、比对指纹——源改稿现形，引文蒸发即降级。规则全文与参考实现在 <a href="https://github.com/renshiliao/xinka">GitHub</a>，在线校验在 <a href="/validate.html">validate.html</a>。</p>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="secnum">§ 4 · 对照</div>
-    <h2>别人给答案，我们给敢签字的答案</h2>
-    <table class="compare">
-      <tr><th>对比</th><th>他们给</th><th>Xinka 给</th></tr>
-      <tr><td>大厂 AI 聊天</td><td>快、全、流畅</td><td class="gold">可验、可信、可溯</td></tr>
-      <tr><td>搜索引擎</td><td>链接一堆自己挑</td><td class="gold">已核验的结论 + 出处</td></tr>
-      <tr><td>百科 / 问答社区</td><td>人多说法杂</td><td class="gold">三源互证 + 置信度明标</td></tr>
-    </table>
-    <p>护城河：抄袭者抄得走界面，<strong>抄不走为每条答案背的书</strong>。</p>
-  </div>
-</section>
-
-<div class="cta">
-  <div class="wrap">
-    <div class="secnum">§ 5 · 参与</div>
-    <h2>把「信任」做成 AI 时代的度量衡</h2>
-    <p class="dim">标准开源 · schema 与校验器免费 · 不采集您的数据</p>
+    <div class="secnum">§ 8 · 在线校验</div>
+    <h2>贴一段信卡，当场验</h2>
+    <p class="dim">校验在浏览器内完成，不上传、不留存。六要素缺一、时间没时区、引文编造、指纹缺失，当场拦下。</p>
     <div class="btns">
-      <a class="btn primary" href="/integrate.html">接入标准</a>
+      <a class="btn primary" href="/validate.html">在线校验 →</a>
       <a class="btn ghost" href="/whitepaper/">📖 白皮书</a>
-      <a class="btn ghost" href="/validate.html">🔧 在线校验器</a>
-      <a class="btn ghost" href="/users.html">👥 适用人群</a>
       <a class="btn ghost" href="/guestbook.html">💬 留言板</a>
       <a class="btn ghost" href="https://github.com/renshiliao/xinka">⭐ GitHub</a>
-      <a class="btn ghost" href="mailto:hi@xinka.ai">✉ hi@xinka.ai</a>
     </div>
   </div>
-</div>
+</section>
+
+</main>
 
 <footer>
-  © 2026 Xinka Standard · 信卡 · Created by <strong>Ren Shiliao（任世燎）</strong> · <a href="https://xinka.ai">xinka.ai</a> · <a href="https://github.com/renshiliao/xinka">GitHub</a> · <a href="mailto:hi@xinka.ai">hi@xinka.ai</a><br>
+  © 2026 Xinka Standard · 信卡 · Created by <strong>Ren Shiliao（任世燎）</strong> · <a href="https://xinka.ai">xinka.ai</a><br>
+  <span class="sign">
+    <a href="/whitepaper/">白皮书</a> · <a href="/validate.html">在线校验器</a> · <a href="/guestbook.html">留言板</a> · <a href="https://github.com/renshiliao/xinka">GitHub</a> · <a href="mailto:hi@xinka.ai">hi@xinka.ai</a>
+  </span><br>
   本页为纯静态页面，不采集任何数据——复制带走即归您，我们不留存任何副本。
 </footer>
+
+<script>
+function copyText(id, btn) {
+  var text = document.getElementById(id).textContent;
+  function done() {
+    var old = btn.textContent;
+    btn.textContent = '已复制';
+    setTimeout(function () { btn.textContent = old; }, 1500);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, fallback);
+  } else { fallback(); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+}
+</script>
 </body>
 </html>
