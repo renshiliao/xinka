@@ -25,7 +25,7 @@ AI 什么都能答，但答案**不敢信、不敢引、不敢用**：引用怕�
 |---|---|---|
 | **【源】** | Source | 结论从哪来——原始出处 URL，可点、可查、可回溯 |
 | **【采】** | Collected | 何时采集——时间明标，时效一眼可判 |
-| **【信】** | Trust | 多可信——已验证 / 待核验，置信度明码实价 |
+| **【信】** | Trust | 多可信——已验证 / 实证型 / 待核验，置信度明码实价 |
 | **【鲜】** | Freshness | 保鲜期——知识也有保质期，到期提醒复核 |
 | **【位】** | Position | 藏在哪——树内坐标可查，知识成体系不成孤岛 |
 | **【证】** | Verified | 怎么证的——三源互证，孤证不立 |
@@ -52,14 +52,16 @@ AI 什么都能答，但答案**不敢信、不敢引、不敢用**：引用怕�
 - [x] schema 规范（[`schema/xinka-0.1.schema.json`](schema/xinka-0.1.schema.json)）
 - [x] 免费校验器 CLI（[`tools/xinka_check.py`](tools/xinka_check.py)）
 - [x] 校验器 Web 版（[xinka.ai/validate.html](https://xinka.ai/validate.html)·与 CLI 同源规则）
-- [x] 参考实现与示例卡集（[`examples/`](examples/)·10 张示例卡+期望错误表）
+- [x] 参考实现与示例卡集（[`examples/`](examples/)·14 张示例卡+期望错误表）
 - [x] v0.2：R9 源分级 + R10 引文绑定（[`schema/xinka-0.2.schema.json`](schema/xinka-0.2.schema.json)）——白皮书信任模型升四机制
+- [x] v0.3：卡种枚举 `card_type`（知识/能力/排障/台账/心法）+ 能力卡「骨架句」/排障卡「症状词·判死法·修法」必填段 + `trust_level` 增实证型（empirical）档（[`schema/xinka-0.3.schema.json`](schema/xinka-0.3.schema.json)）——标准完善、版本结构演进，为将来做好准备
 - [x] 自动收录流水线（[`tools/xinka_pipeline.py`](tools/xinka_pipeline.py)·成卡/保鲜扫描/**指纹复检 reverify**）
 - [x] MCP 插座（[`tools/xinka_mcp.py`](tools/xinka_mcp.py)）+ [接入页](https://xinka.ai/integrate.html)（提示词模板即贴即用）
 - [ ] v1.0 正式化（版本语义冻结·变更流程·贡献者协议）——量柱到位后发布
 
 ## Changelog · 更新记录
 
+- **2026-10-27**（[CHANGELOG-20261027.md](CHANGELOG-20261027.md)）：v0.3 标准完善（卡种枚举/卡种必填段/实证型信任档）+ 校验器与 Web 校验器同步 R11/R12 + 工具链（md2xinka 收方法段进机读孪生）+ 示例回归集更新（good 6/6 · bad 8/8）。
 - **2026-10-06**（[CHANGELOG-20261006.md](CHANGELOG-20261006.md)）：17 项缺陷修复（校验器崩栈/时区/schema 上限、pipeline 写盘顺序/slug 碰撞、域名剥离 bug、MCP 误报、IRI 中文 URL）+ 示例回归集补齐（good 6/6 · bad 7/7）+ 四机制实证批次（R5 保鲜降级真跑 / R9 源分级落卡 / R10 引文绑定+指纹复检三态实弹 / 19 卡体验包·含维护系数新卡）。
 
 ## 使用说明（2026-10-06 补）
@@ -74,10 +76,10 @@ AI 什么都能答，但答案**不敢信、不敢引、不敢用**：引用怕�
 
 ```bash
 python3 tools/xinka_check.py --example     # 输出一张示例信卡
-python3 tools/xinka_check.py card.json     # 校验：通过 ✓ / 未过 ✗（R1-R10 规则）
+python3 tools/xinka_check.py card.json     # 校验：通过 ✓ / 未过 ✗（R1-R12 规则）
 ```
 
-规则（v0.2）：R1 六要素齐备（含值类型）· R2 时间合法（RFC 3339 带时区）且采集早于保鲜期 · R3 置信两档 · R4 已验证须≥3 独立源 · R5 保鲜到期自动降级提示 · R6 校验时序 · R7 出处与坐标格式 · R8 独立性（三源同域名=转载互抄，拦下）· R9 源分级（verified 须含 ≥1 一手源）· R10 引文绑定（引文逐字出自源+sha256 正文指纹）。**R8 由 pipeline 预检与 MCP 执行（采集侧拦截），校验器（xinka_check.py / validate.html）不含 R8**；校验器执行 R1-R7+R9/R10 并内联 schema 上限（claim 4-500、引文 8-300、拒额外字段）。v0.1 卡按 R1-R7 校验，向后兼容。
+规则（v0.3）：R1 六要素齐备（含值类型）· R2 时间合法（RFC 3339 带时区）且采集早于保鲜期 · R3 置信三档（verified / empirical / pending）· R4 已验证须≥3 独立源（实证型 empirical 凭一手实证+复现判死法成档，免三源互证）· R5 保鲜到期自动降级提示 · R6 校验时序 · R7 出处与坐标格式 · R8 独立性（三源同域名=转载互抄，拦下）· R9 源分级（verified 须含 ≥1 一手源）· R10 引文绑定（引文逐字出自源+sha256 正文指纹；empirical 档免绑）· R11 卡种必填枚举 `card_type`（knowledge/ability/troubleshoot/ledger/mind）· R12 卡种必填段（能力卡「骨架句」/排障卡「症状词·判死法·修法」，字段名与 v4 字段表一致禁改名）。**R8 由 pipeline 预检与 MCP 执行（采集侧拦截），校验器（xinka_check.py / validate.html）不含 R8**；校验器执行 R1-R7+R9-R12 并内联 schema 上限（claim 4-500、引文 8-300、拒额外字段）。v0.1/v0.2 卡规则范围不变，但均须补 `card_type`（R11 版本闸，缺卡种一律报错）。
 
 ## Maintenance · 维护状态
 
