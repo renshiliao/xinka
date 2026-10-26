@@ -1,5 +1,6 @@
 {
   "xinka_version": "0.2",
+  "card_type": "knowledge",
   "claim": "示例v0.2：光通量单位为流明（lm）——1 lm = 1 cd·sr",
   "source_url": "https://example.org/standard",
   "collected_at": "2026-10-01T10:00:00Z",

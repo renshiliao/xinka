@@ -6,19 +6,19 @@
 
 | 目录/文件 | 用途 |
 |---|---|
-| `good/`（5 张） | 合规信卡——`xinka_check.py` 校验应全部零错误 |
-| `bad/`（5 张） | 违规信卡——每张恰触犯一条规则（R1/R2/R3/R4/R7） |
+| `good/`（6 张） | 合规信卡——`xinka_check.py` 校验应全部零错误 |
+| `bad/`（8 张） | 违规信卡——每张恰触犯一条规则（R1/R2/R3/R4/R7/R9/R10/R11） |
 | `expected_errors.json` | 回归基准：bad 卡 → 应触发的规则号 |
 | `xinka_gen.py` | 参考实现（生成器）：断言+出处 → 合规信卡 |
 
 ## 回归测试（一行跑完）
 
 ```bash
-for f in examples/good/*.json; do python3 tools/xinka_check.py "$f"; done   # 应 5/5 通过
+for f in examples/good/*.json; do python3 tools/xinka_check.py "$f"; done   # 应 6/6 通过
 for f in examples/bad/*.json;  do python3 tools/xinka_check.py "$f"; done   # 应每张报错
 ```
 
-对照 `expected_errors.json` 核对规则号即可（10/10 匹配 = 校验器健康）。
+对照 `expected_errors.json` 核对规则号即可（14/14 匹配 = 校验器健康）。
 
 ## 生成器用法
 

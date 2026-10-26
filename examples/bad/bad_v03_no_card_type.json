@@ -1,0 +1,14 @@
+{
+  "xinka_version": "0.1",
+  "claim": "2020 年 12 月，尼泊尔与中国联合宣布珠穆朗玛峰最新海拔高程为 8,848.86 米（29,031.69 英尺），该数值由 2019 年尼泊尔测量与 2020 年中国测量数据综合得出。",
+  "source_url": "https://britannica.com/place/Mount-Everest/The-height-of-Everest",
+  "collected_at": "2026-10-01T10:10:00Z",
+  "trust_level": "pending",
+  "freshness_until": "2028-10-01T00:00:00Z",
+  "position": "science/geography/mount-everest",
+  "verification": {
+    "method": "three-source cross-check",
+    "sources": [],
+    "checked_at": null
+  }
+}

@@ -9,24 +9,30 @@ xinka check — Xinka（信卡）免费校验器
     python3 xinka_check.py cards/*.json         # 校验多张
     python3 xinka_check.py --example            # 输出一张示例卡
 
-规则（Xinka Spec v0.1 / v0.2）:
+规则（Xinka Spec v0.1 / v0.2 / v0.3）:
     R1  六要素必填齐备（源/采/信/鲜/位/证）——含值类型与非空检查
     R2  时间格式 RFC 3339（必须带时区偏移）；collected_at 必须早于 freshness_until
-    R3  trust_level 只能是 verified / pending
-    R4  verified 卡必须有 >=3 个互不相同的互证来源
+    R3  trust_level 只能是 verified / empirical / pending
+    R4  verified 卡必须有 >=3 个互不相同的互证来源；
+        empirical（实证型）档豁免三源——凭一手实证记录 + 复现判死法成档（不强求外部源）
     R5  保鲜期已过（now > freshness_until）且未复核 -> 强制降级提示
     R6  verification.checked_at 不得早于 collected_at
     R7  source_url 必须 http(s)，position 坐标合法
     R8  三源独立性由 pipeline 预检 / MCP 执行（本校验器不重复检查）
     R9  源分级（v0.2）: verified 卡须含 >=1 一手源(first-party)，聚合/UGC 不可单独成证
     R10 引文绑定（v0.2）: evidence 引文 >=8 字、逐字出自对应源、附 sha256 指纹
+    R11 卡种（v0.3）: card_type 必填枚举 knowledge/ability/troubleshoot/ledger/mind——
+        版本闸：缺 card_type 的旧格式卡一律报错（结构升级待补）
+    R12 卡种必填段（v0.3）: ability 卡必填「骨架句」；troubleshoot 卡必填「症状词/判死法/修法」
+        （字段名与心网 v4 架构规格字段表一致，禁改名）
 
 schema 上限内联校验（claim 4-500、quote 8-300、position <=200、拒额外字段、拒伪 URL）。
 
-v0.1 卡按 R1-R7 校验（向后兼容）；v0.2 卡追加 R9/R10。
+v0.1 卡按 R1-R7+R11 校验（向后兼容）；v0.2 卡追加 R9/R10；v0.3 卡追加 R11/R12。
+v0.3 引文绑定分型：empirical 档经验卡免绑；其余同 v0.2 必绑（md2xinka 重生成后必重绑）。
 引文逐字核对与 sha256 复核（抓取比对）由 xinka_evidence.py / pipeline --reverify 完成。
 
-Xinka Specification Early Draft v0.2
+Xinka Specification Early Draft v0.3
 Created by Ren Shiliao (任世燎) · 2026 · xinka.ai
 """
 
@@ -35,17 +41,24 @@ import re
 import sys
 from datetime import datetime, timezone
 
-REQUIRED = ["xinka_version", "claim", "source_url", "collected_at",
+REQUIRED = ["xinka_version", "card_type", "claim", "source_url", "collected_at",
             "trust_level", "freshness_until", "position", "verification"]
 VERIF_REQUIRED = ["method", "sources", "checked_at"]
 POSITION_RE = re.compile(r"^[a-z0-9\-]+(/[a-z0-9\-\.]+)*$")
-SCHEMA_TOP_KEYS = set(REQUIRED) | {"evidence", "snapshots"}
+SCHEMA_TOP_KEYS = set(REQUIRED) | {"evidence", "snapshots",
+                                   "骨架句", "症状词", "判死法", "修法"}
 SCHEMA_VERIF_KEYS = set(VERIF_REQUIRED) | {"first_party_note"}
-# schema 上限内联（xinka-0.2.schema.json 对照）
+# v0.3 卡种枚举（对应 META 组块：知识/能力/排障/台账/心法）
+CARD_TYPES = ("knowledge", "ability", "troubleshoot", "ledger", "mind")
+# 各卡种必填段（字段名与心网 v4 架构规格字段表一致，禁改名）
+CARD_TYPE_REQUIRED = {"ability": ["骨架句"],
+                      "troubleshoot": ["症状词", "判死法", "修法"]}
+# schema 上限内联（xinka-0.3.schema.json 对照）
 LIMITS = {"claim": (4, 500), "quote": (8, 300), "position": (1, 200)}
 
 EXAMPLE = {
-    "xinka_version": "0.1",
+    "xinka_version": "0.3",
+    "card_type": "knowledge",
     "claim": "示例：MiMo-V2.6-Pro 为 1.02T 参数、激活 42B 的开源大模型",
     "source_url": "https://example.com/official-model-card",
     "collected_at": "2026-10-01T10:00:00Z",
@@ -56,7 +69,13 @@ EXAMPLE = {
         "method": "three-source cross-check",
         "sources": [],
         "checked_at": None
-    }
+    },
+    "evidence": [{
+        "url": "https://example.com/official-model-card",
+        "quote": "示例引文：MiMo-V2.6-Pro 开源大模型参数与激活量",
+        "sha256": "4546e6891db5d789738c90e4a2a014ee9814d387d11101a520bbe66c868e71ea",
+        "fetched_at": "2026-10-01T10:00:00Z"
+    }]
 }
 
 
@@ -102,6 +121,8 @@ def check_card(card, now=None):
     if not isinstance(card, dict):
         return ["R1 根对象必须是 JSON object"], []
     for k in REQUIRED:
+        if k == "card_type":
+            continue  # 卡种缺失由 R11 版本闸专报，不重复报 R1
         if k not in card:
             errors.append(f"R1 缺要素【{k}】——六要素必填齐备")
     # 额外字段（schema additionalProperties:false）
@@ -120,7 +141,25 @@ def check_card(card, now=None):
 
     xkv = card.get("xinka_version")
     if "xinka_version" in card and (not isinstance(xkv, str) or not re.match(r"^0\.[0-9]+$", xkv)):
-        errors.append(f"R1 xinka_version 非法: {xkv!r}（形如 0.2）")
+        errors.append(f"R1 xinka_version 非法: {xkv!r}（形如 0.3）")
+
+    # R11 卡种（v0.3 版本闸）：card_type 必填枚举——缺卡种的旧格式卡一律报错
+    ct = card.get("card_type")
+    if "card_type" not in card:
+        errors.append("R11 缺 card_type——v0.3 版本闸：旧格式卡须补卡种枚举"
+                      "（knowledge/ability/troubleshoot/ledger/mind）")
+    elif not isinstance(ct, str) or ct not in CARD_TYPES:
+        errors.append(f"R11 card_type 非法: {ct!r}（只允许 {'/'.join(CARD_TYPES)}）")
+    else:
+        # R12 卡种必填段（字段名与心网 v4 字段表一致，禁改名）
+        for field in CARD_TYPE_REQUIRED.get(ct, []):
+            v = card.get(field)
+            ok = (isinstance(v, str) and bool(v.strip())) or \
+                 (isinstance(v, list) and bool(v) and
+                  all(isinstance(i, str) and i.strip() for i in v))
+            if not ok:
+                errors.append(f"R12 {ct} 卡必填【{field}】非空"
+                              "——能力卡带骨架句、排障卡带症状词/判死法/修法")
 
     # R7 source_url / position（BUG-4 修复：空串按非法）
     su = card.get("source_url")
@@ -138,11 +177,11 @@ def check_card(card, now=None):
         elif len(pos) > LIMITS["position"][1]:
             errors.append(f"R7 position 超长（>{LIMITS['position'][1]}）")
 
-    # R3 trust_level
+    # R3 trust_level（v0.3 增 empirical 实证型档）
     tl = card.get("trust_level")
     if "trust_level" in card:
-        if not isinstance(tl, str) or tl not in ("verified", "pending"):
-            errors.append(f"R3 trust_level 非法: {tl!r}（只允许 verified / pending）")
+        if not isinstance(tl, str) or tl not in ("verified", "empirical", "pending"):
+            errors.append(f"R3 trust_level 非法: {tl!r}（只允许 verified / empirical / pending）")
 
     # R2 时间格式与顺序（BUG-2 修复：无时区=R2 拒绝，不再放行后崩）
     ca_raw, fu_raw = card.get("collected_at"), card.get("freshness_until")
@@ -166,6 +205,9 @@ def check_card(card, now=None):
     # verification 结构（BUG-3 修复：None 不再静默通过）
     ver = card.get("verification")
     is_v02 = str(card.get("xinka_version", "")).startswith("0.2")
+    is_v03 = str(card.get("xinka_version", "")).startswith("0.3")
+    # R9/R10 强制档：0.2 全卡必绑；0.3 除 empirical（经验卡免绑·分型）外必绑
+    bind_required = is_v02 or (is_v03 and tl != "empirical")
     if ver is None:
         if "verification" in card:
             errors.append("R1 verification 必须是 object（不可为 null）")
@@ -183,11 +225,15 @@ def check_card(card, now=None):
             errors.append("R6 verification.sources 必须是数组")
             srcs = []
         urls = [_src_url(s) for s in srcs]
-        # R4 verified 需 >=3 独立源
+        # R4 verified 需 >=3 独立源；empirical 豁免三源但须复现判死法（method 非空）
         if tl == "verified":
             uniq = set(urls)
             if len(uniq) < 3:
                 errors.append(f"R4 verified 卡须 >=3 个互不相同的互证来源（当前 {len(uniq)}）")
+        elif tl == "empirical":
+            if not str(ver.get("method") or "").strip():
+                errors.append("R4 empirical 卡须填 verification.method（复现判死法/复现步骤）"
+                              "——一手实证+复现法即达实证档，不强求 3 外部源")
         # 独立性提示
         elif len(set(urls)) != len(urls):
             warnings.append("R4 sources 中存在重复来源——独立性存疑")
@@ -196,8 +242,8 @@ def check_card(card, now=None):
             u = _src_url(s)
             if not isinstance(u, str) or not re.match(r"^https?://", u):
                 errors.append(f"R7 verification.sources[{i}] 非法 URL: {u!r}")
-        # R9 源分级（v0.2）
-        if is_v02:
+        # R9 源分级（v0.2 起强制；0.3 empirical 档免）
+        if bind_required:
             tiers = [_src_tier(s) for s in srcs]
             if tl == "verified" and not any(t == "first-party" for t in tiers):
                 errors.append("R9 verified 卡须含 >=1 一手源（first-party）——聚合/UGC 不可单独成证")
@@ -205,11 +251,11 @@ def check_card(card, now=None):
                 t = _src_tier(s)
                 if t is not None and t not in ("first-party", "media", "aggregator", "unknown"):
                     errors.append(f"R9 源分级非法: {t!r}（只允许 first-party/media/aggregator/unknown）")
-        # R10 引文绑定（v0.2）
+        # R10 引文绑定（v0.2 起强制；0.3 empirical 档经验卡免绑）
         ev = card.get("evidence")
-        if is_v02:
+        if bind_required:
             if not isinstance(ev, list) or not ev:
-                errors.append("R10 缺 evidence 引文绑定——v0.2 卡必须附引文+指纹")
+                errors.append("R10 缺 evidence 引文绑定——v0.2/v0.3 卡必须附引文+指纹（0.3 empirical 档免）")
             else:
                 for i, e in enumerate(ev):
                     if not isinstance(e, dict):
@@ -225,8 +271,8 @@ def check_card(card, now=None):
                         errors.append(f"R10 evidence[{i}] 缺合法 sha256 指纹")
                     if e.get("url") not in urls and e.get("url") != card.get("source_url"):
                         errors.append(f"R10 evidence[{i}] url 不在 sources 内——引文须绑定到证源")
-        elif ev is not None:
-            warnings.append("R10 检测到 evidence 字段但 xinka_version 非 0.2——建议升版")
+        elif ev is not None and not (is_v03 and tl == "empirical"):
+            warnings.append("R10 检测到 evidence 字段但当前版本/信任档未强制绑定——建议升版")
         # R6 checked_at 顺序
         chk = ver.get("checked_at")
         if chk is not None:
