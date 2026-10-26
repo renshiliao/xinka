@@ -1,5 +1,6 @@
 {
   "xinka_version": "0.2",
+  "card_type": "knowledge",
   "claim": "bad:v0.2卡缺evidence测试断言内容",
   "source_url": "https://example.org/standard",
   "collected_at": "2026-10-01T10:00:00Z",

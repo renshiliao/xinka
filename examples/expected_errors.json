@@ -19,5 +19,8 @@
   ],
   "bad_v02_no_evidence.json": [
     "R10"
+  ],
+  "bad_v03_no_card_type.json": [
+    "R11"
   ]
 }

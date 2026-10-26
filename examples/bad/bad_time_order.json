@@ -1,5 +1,6 @@
 {
   "xinka_version": "0.1",
+  "card_type": "knowledge",
   "claim": "这张卡的 collected_at（2026-10-01）晚于 freshness_until（2025-10-01），时间顺序倒置，用于测试 R2。",
   "source_url": "https://example.com/bad-time-order",
   "collected_at": "2026-10-01T11:10:00Z",

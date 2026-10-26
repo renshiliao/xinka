@@ -15,16 +15,21 @@ xinka_gen — Xinka 信卡参考实现（生成器）
     )
 
 规则内建：3 源自动升 verified；不足则 pending；保鲜期按年限算；时间全 RFC 3339。
-Xinka Reference Implementation v0.1 · Created by Ren Shiliao (任世燎) 2026
+v0.3：输出必带 card_type 卡种（knowledge/ability/troubleshoot/ledger/mind，默认 knowledge）。
+Xinka Reference Implementation v0.3 · Created by Ren Shiliao (任世燎) 2026
 """
 import json
 from datetime import datetime, timedelta, timezone
 
+CARD_TYPES = ("knowledge", "ability", "troubleshoot", "ledger", "mind")
+
 
 def make_card(claim: str, source_url: str, position: str,
               extra_sources: list = None, freshness_years: float = 2,
-              trust_level: str = None) -> dict:
+              trust_level: str = None, card_type: str = "knowledge") -> dict:
     """生成一张合规的 Xinka 信卡。"""
+    if card_type not in CARD_TYPES:
+        raise ValueError(f"card_type 非法: {card_type!r}（只允许 {'/'.join(CARD_TYPES)}）")
     now = datetime.now(timezone.utc).replace(microsecond=0)
     sources = [source_url] + list(extra_sources or [])
     # 独立来源去重
@@ -34,6 +39,7 @@ def make_card(claim: str, source_url: str, position: str,
         trust_level = "verified" if len(uniq) >= 3 else "pending"
     return {
         "xinka_version": "0.1",
+        "card_type": card_type,
         "claim": claim,
         "source_url": source_url,
         "collected_at": now.isoformat().replace("+00:00", "Z"),
