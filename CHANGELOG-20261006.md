@@ -19,6 +19,5 @@
 - 工具链：md2xinka.py（md→JSON 机读孪生）、bind_local_snapshot.py、reverify_local.py、xinka_query.py（检索/关联/统计）
 
 ## 三、官网同步待命
-心网开源包（信卡熔炉·安全约束层）已就绪于本机，待心网开源准备完成后随官网一并更新。
 
 Created · 2026-10-06
