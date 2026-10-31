@@ -4,7 +4,7 @@
 > 可信知识的最小单元——AI 时代的「信任」度量衡。
 
 [![Status](https://img.shields.io/badge/status-early_draft-orange)](#)
-[![License](https://img.shields.io/badge/license-coming_soon-lightgrey)](#)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green)](#)
 [![Website](https://img.shields.io/badge/website-xinka.ai-blue)](https://xinka.ai)
 
 **问得到，更信得过——每条答案带户口本。**
@@ -137,6 +137,12 @@ R8 独立性预检：verified 卡三源须跨 ≥2 个独立域名——三篇�
 | `xinka_make_card` | 断言+三源→信卡 JSON（单源自降 pending·同域名伪互证拒收） |
 | `xinka_check_card` | 信卡→R1-R7+R8 独立性校验 |
 | `xinka_freshness` | 扫卡目录→过期/临期清单 |
+
+### 完整包 · mcp/（2026-11-01 新增）
+`mcp/` — **60 张样例信卡**（`mcp/opensourced_cards.sample.jsonl`，亦见 `cards/`）。License: Apache-2.0。
+
+
+
 
 ## 提示词模板
 `prompts/XINKA_AGENT_PROMPT.md` — 给任何 AI 的"户口本作业规程"（角色/五条铁律/JSON 模板/自检清单/边界），粘贴即用。
