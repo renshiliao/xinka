@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xinka.ai/schema/xinka-1.0.0.schema.json",
+  "title": "信卡机读标准 v1.0.0 · 卡草稿 schema",
+  "description": "信卡=目标+标签集。本件为写卡草稿（作者提交面）的机读 schema，由契约单源 contract.DRAFT_SCHEMA 机械导出（契约版本 1.0.0）；机管字段（账/card_id/tag_id/时间/过规则/置信度）永不入草稿，私填即 R09 拦。标准正文见 docs/信卡标准-v1.0.0.md。",
+  "xinka_standard_version": "1.0.0",
+  "xinka_compat": "0.3",
+  "xinka_contract_version": "1.0.0",
+  "draft": {
+    "type": "object",
+    "required": [
+      "card_type",
+      "目标",
+      "标签集"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "card_type": {
+        "type": "string",
+        "enum": [
+          "对象卡",
+          "对己卡组",
+          "课卡",
+          "刀谱卡",
+          "基础卡",
+          "坑账卡"
+        ],
+        "description": "六卡类（定案）"
+      },
+      "目标": {
+        "type": "object",
+        "required": [
+          "kind",
+          "name",
+          "scope"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "实体",
+              "对象",
+              "任务",
+              "概念",
+              "我"
+            ],
+            "description": "目标五类（\"谁\"；「我」=对己卡目标）"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "目标名，非空"
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1,
+            "description": "一句话界定适用域"
+          }
+        }
+      },
+      "标签集": {
+        "type": "array",
+        "minItems": 1,
+        "description": "≥1 条标签（最小记忆单元，验的是标签不是卡）",
+        "items": {
+          "type": "object",
+          "required": [
+            "维度",
+            "key",
+            "值",
+            "验证"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "维度": {
+              "type": "string",
+              "enum": [
+                "属性",
+                "置信度",
+                "来源",
+                "凭证",
+                "时间"
+              ]
+            },
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "标签名"
+            },
+            "值": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400,
+              "description": "非空 ≤400 字符（超长即拆，一卡一事）"
+            },
+            "验证": {
+              "type": "object",
+              "required": [
+                "凭证锚",
+                "来源档"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "凭证锚": {
+                  "type": "string",
+                  "description": "凭证锚指针（只存指针不存原文）：file:<相对库根路径>[#L行号] | url:https?://… | doc:<文档号> | session:<会话id>@<ISO时刻>"
+                },
+                "来源档": {
+                  "type": "string",
+                  "enum": [
+                    "亲验",
+                    "转述",
+                    "待验"
+                  ],
+                  "description": "来源三档（B1）"
+                }
+              }
+            }
+          }
+        }
+      },
+      "source_updated_at": {
+        "type": "string",
+        "description": "〔F2 上行〕水位快照（幂等：同 id 水位未动不重提）——旁账记录，不入卡身"
+      }
+    }
+  },
+  "card_output": {
+    "type": "object",
+    "description": "信卡（schema v1.0.0）：卡级五件+标签集+账（引擎机管）",
+    "required": [
+      "card_schema_version",
+      "xinka_compat",
+      "card_id",
+      "card_type",
+      "目标",
+      "标签集",
+      "账"
+    ]
+  },
+  "port_outputs": {
+    "xinka_write_card": {
+      "type": "object",
+      "required": [
+        "status",
+        "card_id"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "admitted",
+            "skipped",
+            "rejected"
+          ]
+        },
+        "card_id": {
+          "type": "string",
+          "description": "幂等键 xc-<hash12>（引擎按目标派生）"
+        },
+        "revision": {
+          "type": "integer",
+          "description": "修订号（同卡异身 +1，同身幂等跳过）"
+        },
+        "content_hash": {
+          "type": "string",
+          "description": "卡身哈希 h-<hash24>"
+        },
+        "拦因码": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "rejected 时给出：R01..R09（B1/B2 拦因码）"
+        },
+        "墓碑": {
+          "type": "string",
+          "description": "rejected 且因尸变时：墓碑时间"
+        }
+      }
+    },
+    "xinka_read_card": {
+      "type": "oneOf",
+      "description": "活卡全卡；无此卡返回 status=not_found"
+    },
+    "xinka_search": {
+      "type": "object",
+      "required": [
+        "目标",
+        "模式",
+        "对账"
+      ],
+      "properties": {
+        "目标": {
+          "type": "string"
+        },
+        "模式": {
+          "type": "string",
+          "enum": [
+            "属性集",
+            "记忆片"
+          ]
+        },
+        "属性集": {
+          "type": "object",
+          "description": "key → [{值, 置信度, 来源档, 维度, 来源卡, 锚, 合分}]"
+        },
+        "记忆片": {
+          "type": "array",
+          "description": "〔F2 下行〕[{slice_id, conclusion, conf, pointers, timeframe, ts}]"
+        },
+        "对账": {
+          "type": "object",
+          "description": "{点查命中, 扩散新增, 合分入选, 回写}（四数对账头）"
+        }
+      }
+    },
+    "xinka_validate": {
+      "type": "object",
+      "required": [
+        "ok",
+        "拦因码",
+        "逐标签判词"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "过=可入卡（与写卡同判据，干跑不落盘）"
+        },
+        "拦因码": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "逐标签判词": {
+          "type": "object",
+          "description": "{'#1': [拦因码…], …} 逐标签拦因"
+        },
+        "标签数": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

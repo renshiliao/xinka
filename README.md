@@ -55,6 +55,7 @@ AI 什么都能答，但答案**不敢信、不敢引、不敢用**：引用怕�
 - [x] 参考实现与示例卡集（[`examples/`](examples/)·14 张示例卡+期望错误表）
 - [x] v0.2：R9 源分级 + R10 引文绑定（[`schema/xinka-0.2.schema.json`](schema/xinka-0.2.schema.json)）——白皮书信任模型升四机制
 - [x] v0.3：卡种枚举 `card_type`（知识/能力/排障/台账/心法）+ 能力卡「骨架句」/排障卡「症状词·判死法·修法」必填段 + `trust_level` 增实证型（empirical）档（[`schema/xinka-0.3.schema.json`](schema/xinka-0.3.schema.json)）——标准完善、版本结构演进，为将来做好准备
+- [x] **信卡机读标准 v1.0.0**（[`docs/信卡标准-v1.0.0.md`](docs/信卡标准-v1.0.0.md)）——卡=目标+标签集：六卡类+对己卡组九类、验证精确码 R01–R09、来源三档（亲验|转述|待验）、凭证锚只存指针、归一化含零宽剥离、置信代谢（涨慢跌狠+半衰期）+ 幂等防尸变、MCP 四口契约；机读 schema：[`schema/xinka-1.0.0.schema.json`](schema/xinka-1.0.0.schema.json)（2026-11-27，逐节追平信卡库 v1 实现，实测数据随正文）
 - [x] 自动收录流水线（[`tools/xinka_pipeline.py`](tools/xinka_pipeline.py)·成卡/保鲜扫描/**指纹复检 reverify**）
 - [x] MCP 插座（[`tools/xinka_mcp.py`](tools/xinka_mcp.py)）+ [接入页](https://xinka.ai/integrate.html)（提示词模板即贴即用）
 - [ ] v1.0 正式化（版本语义冻结·变更流程·贡献者协议）——量柱到位后发布
