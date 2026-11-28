@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub 开源专题 · 开源三柱：可验证的技术底座 — xinka.ai</title>
+<meta name="description" content="xinka.ai 的 GitHub 开源专题：开源三柱——信卡库（标签式记忆）、星轴自叙事引擎、派派，玩具级与特征级两栏对照，长期货架，逐件亮真身。">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #081016;
+    --surface: #0d1820;
+    --surface-2: #12222c;
+    --line: #27404c;
+    --line-strong: #3b5b68;
+    --text: #e8f0f2;
+    --muted: #91a7af;
+    --dim: #657d86;
+    --human: #e0a65b;
+    --human-soft: #2b2117;
+    --ai: #65d0c5;
+    --ai-soft: #102b2b;
+    --focus: #9ce7df;
+    --radius: 14px;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    min-width: 320px;
+    background: var(--bg);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background:
+      radial-gradient(circle at 15% -10%, rgba(224, 166, 91, .08), transparent 32rem),
+      radial-gradient(circle at 90% 0%, rgba(101, 208, 197, .08), transparent 34rem),
+      var(--bg);
+    font-family: var(--sans);
+    line-height: 1.65;
+  }
+
+  a { color: var(--ai); }
+
+  a:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .shell {
+    width: min(1280px, 100%);
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* ---------- 顶部菜单 ---------- */
+  .topnav {
+    position: sticky;
+    z-index: 30;
+    top: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    align-items: center;
+    margin: 0 0 22px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: rgba(8, 16, 22, .96);
+  }
+
+  .topnav a {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: .82rem;
+    letter-spacing: .06em;
+    text-decoration: none;
+  }
+
+  .topnav a:hover { color: var(--ai); }
+
+  .topnav .nav-home {
+    margin-left: auto;
+    padding: 6px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    color: var(--text);
+  }
+
+  .topnav .nav-home:hover { border-color: var(--ai); color: var(--ai); }
+
+  /* ---------- hero ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+    gap: 26px;
+    align-items: end;
+    margin: 8px 0 30px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
+    color: var(--ai);
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .eyebrow::before {
+    width: 24px;
+    height: 1px;
+    background: currentColor;
+    content: "";
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 980px;
+    font-size: clamp(1.7rem, 3.4vw, 3rem);
+    line-height: 1.18;
+    letter-spacing: -.02em;
+  }
+
+  .hero .lede {
+    max-width: 76ch;
+    margin: 16px 0 0;
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    color: var(--text);
+    background: var(--surface);
+    font-size: .95rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .btn:hover { border-color: var(--ai); color: var(--ai); }
+
+  .btn--primary {
+    border-color: color-mix(in srgb, var(--ai), transparent 25%);
+    color: #06231f;
+    background: var(--ai);
+    font-weight: 600;
+  }
+
+  .btn--primary:hover { color: #06231f; background: color-mix(in srgb, var(--ai), white 18%); }
+
+  .btn--soon {
+    border-style: dashed;
+    color: var(--dim);
+    background: transparent;
+    cursor: default;
+  }
+
+  .btn--soon:hover { border-color: var(--line-strong); color: var(--dim); }
+
+  .hero-note {
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: rgba(13, 24, 32, .76);
+  }
+
+  .hero-note strong {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--ai);
+    font-family: var(--mono);
+    font-size: .8rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .hero-note p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+  /* ---------- 区块通用 ---------- */
+  section { margin: 44px 0; scroll-margin-top: 92px; }
+
+  .block-kicker {
+    margin: 0 0 6px;
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: .74rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 0 0 10px;
+    font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+    letter-spacing: -.01em;
+  }
+
+  .section-lede { max-width: 82ch; margin: 0 0 22px; color: var(--muted); }
+
+  /* ---------- 三柱卡片 ---------- */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .oss-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgba(13, 24, 32, .74);
+  }
+
+  .oss-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: baseline;
+  }
+
+  .oss-name { margin: 0; font-size: 1.16rem; }
+
+  .oss-repo {
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: .8rem;
+  }
+
+  .badge {
+    margin-left: auto;
+    padding: 2px 10px;
+    border: 1px solid color-mix(in srgb, var(--human), transparent 45%);
+    border-radius: 999px;
+    color: var(--human);
+    font-family: var(--mono);
+    font-size: .72rem;
+    white-space: nowrap;
+  }
+
+  .badge--done {
+    border-color: color-mix(in srgb, var(--ai), transparent 45%);
+    color: var(--ai);
+  }
+
+  .oss-tagline { margin: 0; font-size: 1.02rem; }
+
+  .oss-numbers {
+    margin: 0;
+    padding: 10px 12px;
+    border-left: 2px solid var(--line-strong);
+    color: var(--muted);
+    font-size: .88rem;
+  }
+
+  .oss-numbers b { color: var(--text); font-weight: 600; }
+
+  .oss-boundary {
+    margin: 0;
+    color: var(--dim);
+    font-size: .82rem;
+  }
+
+  .oss-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .oss-license {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: .78rem;
+  }
+
+  .oss-foot .btn { min-height: 36px; padding: 6px 14px; font-size: .86rem; }
+
+  .oss-note {
+    margin: 0;
+    color: var(--dim);
+    font-size: .78rem;
+  }
+
+  /* ---------- 对照栏 ---------- */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: minmax(120px, .55fr) minmax(0, 1fr) minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgba(13, 24, 32, .74);
+  }
+
+  .compare-grid > div {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .compare-grid .ch {
+    padding: 18px 16px;
+    background: var(--surface-2);
+  }
+
+  .compare-grid .ch--toy { color: var(--human); }
+  .compare-grid .ch--agi { color: var(--ai); }
+
+  .compare-grid .ch strong { display: block; font-size: 1.08rem; }
+  .compare-grid .ch span { font-family: var(--mono); font-size: .78rem; opacity: .85; }
+
+  .compare-grid .row-label {
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .06em;
+  }
+
+  .compare-grid .cell { color: var(--muted); font-size: .92rem; }
+  .compare-grid .cell b { color: var(--text); font-weight: 600; }
+  .compare-grid .row-last, .compare-grid .cell-last { border-bottom: 0; }
+
+  .compare-close {
+    margin: 14px 2px 0;
+    color: var(--muted);
+    font-size: .98rem;
+  }
+
+  .compare-close b { color: var(--text); }
+
+  /* ---------- 玩法三式 + 例句 ---------- */
+  .play-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .play-card {
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: rgba(13, 24, 32, .74);
+  }
+
+  .play-card h3 { margin: 0 0 8px; font-size: 1.02rem; color: var(--human); }
+  .play-card p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+  .quote-box {
+    margin-top: 16px;
+    padding: 20px 22px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: rgba(18, 34, 44, .6);
+  }
+
+  .quote-box h3 { margin: 0 0 10px; font-size: 1.02rem; }
+
+  .quote-box blockquote {
+    margin: 0 0 8px;
+    padding-left: 14px;
+    border-left: 3px solid var(--human);
+    color: var(--text);
+    font-size: 1.08rem;
+  }
+
+  .quote-box cite { color: var(--dim); font-style: normal; font-family: var(--mono); font-size: .8rem; }
+
+  .quote-box .oss-note { margin-top: 10px; }
+
+  /* ---------- 已上架 / 未来位子 ---------- */
+  .shelf-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .shelf-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: rgba(13, 24, 32, .74);
+  }
+
+  .shelf-item strong { font-size: 1.02rem; }
+  .shelf-item .oss-repo { width: 100%; order: 3; }
+  .shelf-item .tag {
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: .76rem;
+    white-space: nowrap;
+  }
+
+  .shelf-item .btn { margin-left: auto; min-height: 36px; padding: 6px 14px; font-size: .86rem; }
+
+  .ghost-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .ghost-card {
+    display: flex;
+    min-height: 120px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px;
+    border: 1px dashed var(--line-strong);
+    border-radius: 18px;
+    color: var(--dim);
+    text-align: center;
+  }
+
+  .ghost-card strong { color: var(--muted); font-size: 1.02rem; }
+
+  /* ---------- 收尾 ---------- */
+  .closing {
+    padding: 26px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgba(13, 24, 32, .74);
+    text-align: center;
+  }
+
+  .closing p { max-width: 62ch; margin: 0 auto 8px; color: var(--muted); }
+  .closing .closing-line { color: var(--text); font-size: 1.06rem; }
+  .closing .hero-cta { justify-content: center; }
+
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    justify-content: space-between;
+    margin: 40px 0 8px;
+    padding: 16px 2px 22px;
+    border-top: 1px solid var(--line);
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: .76rem;
+    letter-spacing: .05em;
+  }
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width: 1180px) {
+    .hero { grid-template-columns: 1fr; }
+    .play-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 1080px) {
+    .card-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 820px) {
+    .shell { padding: 14px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .compare-grid .ch { border-bottom: 1px solid var(--line); }
+    .compare-grid .row-label { background: var(--surface-2); }
+    .shelf-strip, .ghost-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+  <main class="shell">
+
+    <!-- 顶部菜单 -->
+    <nav class="topnav" aria-label="开源专题菜单">
+      <a href="#shelf">开源三柱</a>
+      <a href="#compare">玩具级 vs 特征级</a>
+      <a href="#future">未来位子</a>
+      <a href="#scholars">学者推荐</a>
+      <a href="#contact">联系</a>
+      <a class="nav-home" href="https://xinka.ai/">回首页</a>
+    </nav>
+
+    <!-- hero -->
+    <header class="hero">
+      <div>
+        <p class="eyebrow">xinka.ai / github open source</p>
+        <h1>GitHub 开源专题：开源三柱，可验证的技术底座</h1>
+        <p class="lede">商业产品之前，先把底座亮出来。三件开源件正陆续上架 GitHub，每件开源后都可跑、可验、可改——欢迎开箱验货。这页是长期货架：新件上架，就挂到这里。</p>
+        <div class="hero-cta">
+          <a class="btn btn--primary" href="#shelf">看开源三柱</a>
+          <a class="btn" href="#compare">玩具级 vs 特征级</a>
+          <a class="btn" href="#future">未来位子</a>
+        </div>
+      </div>
+      <aside class="hero-note" aria-label="开源货架说明">
+        <strong>long-term shelf / 长期货架</strong>
+        <p>一仓一件，各立各的门户。仓库链接位两态：已上架的挂真链，未上架的挂「即将开源」——货架常开，逐件亮真身。</p>
+      </aside>
+    </header>
+
+    <!-- ① 开源三柱 -->
+    <section id="shelf" aria-label="开源三柱">
+      <p class="block-kicker">three pillars / 开源三柱</p>
+      <h2>开源三柱：一柱一卡</h2>
+      <p class="section-lede">三件按发版序陆续上架，商业产品之前三柱全立。每卡五栏：名称、定位句、仓库、许可证、状态；数字分「实测」与「设计口径」，随数标注。</p>
+
+      <div class="card-grid">
+
+        <article class="oss-card">
+          <div class="oss-top">
+            <h3 class="oss-name">信卡库（标签式记忆）</h3>
+            <span class="oss-repo">xinka-mcp · xinka-memory</span>
+            <span class="badge">MCP 已上架 · 记忆部筹备中</span>
+          </div>
+          <p class="oss-tagline">信卡 = 贴满标签的目标——对人对事对物的印象，都在卡上；记忆 = 写卡，认知 = 读卡；自我 = 对己信卡组。一个 Server 谁都能插：写卡、读卡、检索、验证四口，让你的 MCP 客户端拥有可对账的卡片记忆——见一人或事物，初见贴标签，再见加深，越用越懂。先定格式，再谈智能——原子卡、记忆片、规矩三格式，加进、存、选、合、删、用六段代谢骨架，数据在你本地，算法与数据分离。</p>
+          <p class="oss-numbers"><b>实测留档：</b>40 项验收真跑全过；20/20 源文件带 SPDX 标识头；运行时零第三方依赖（Python 3.9+ 标准库，stdio JSON-RPC 2.0）；协议客户端与 Codex 双真插实测留档。 <b>设计口径参数：</b>常驻注入预算不超过 2500 token，三层卡口；记忆半衰三档（90/180/365 天）；30 天未用条目淘汰，被引用保护；时间戳由机钟注入，禁手填。</p>
+          <p class="oss-boundary">边界：一个库两个名字——信卡库即标签式记忆。本仓开源的是结构——卡的 schema、存储、校验、代谢框架，加四口封装；标签抽取算法与匹配引擎、配套的推导引擎与卡库内容都不在本仓——数据归你，算法在服务端与完整版；完整版仅向合作方闭门演示。</p>
+          <div class="oss-foot">
+            <span class="oss-license">AGPL-3.0-or-later（信卡库 MCP 已定）；记忆部定案中，发版时随仓公布</span>
+            <a class="btn" href="https://github.com/renshiliao/xinka-mcp">仓库：xinka-mcp</a>
+          </div>
+          <p class="oss-note">许可证注记：网络交互条款在场——改完挂网上给人用，须向用户提供对应源码。</p>
+        </article>
+
+        <article class="oss-card">
+          <div class="oss-top">
+            <h3 class="oss-name">星轴自叙事引擎</h3>
+            <span class="oss-repo">xingzhou-narrative</span>
+            <span class="badge badge--done">已上架 · 2026-11-27</span>
+          </div>
+          <p class="oss-tagline">星（未来·方向）+ 轴（过去·来路）→ 自叙事：把一个人的星与时间轴，机械地讲成「我是谁」的故事——从哪来 + 往哪去，过去和未来的对话。玩具级的插座，专业级的用途。</p>
+          <p class="oss-numbers"><b>发布前自测实测：</b>5 个样本下载即玩，三向压测全过——20/20 并发跑样本、输出指纹全员一致；10 万行轴全链 &lt;0.7 秒；恶意输入 32/32 带码拒收不崩。</p>
+          <p class="oss-boundary">宣言：星轴自叙事——一个系统对自己的叙述。轴，是它走过的路；星，是它要走的方向。带着来路走向方向，这就是完整的自我。</p>
+          <div class="oss-foot">
+            <span class="oss-license">AGPL-3.0-or-later</span>
+            <a class="btn" href="https://github.com/renshiliao/xingzhou-narrative">仓库：xingzhou-narrative</a>
+          </div>
+          <p class="oss-note">样本注记：动漫样本为向原作致敬的虚构演绎，仅供学习研究，不用于商业用途，原著版权归原权利人所有；样本皆虚构演绎，请勿拿去冒充真人真事。</p>
+        </article>
+
+        <article class="oss-card">
+          <div class="oss-top">
+            <h3 class="oss-name">派派</h3>
+            <span class="oss-repo">paipai</span>
+            <span class="badge badge--done">已上架 · 2026-11-27</span>
+          </div>
+          <p class="oss-tagline">把「让 AI 干活」变成可对账的工程。三单模板（构建、审计、攻坚），账行铁则（记账规则：一单一回执），验收三闸（机检、实录、幂等）。</p>
+          <p class="oss-numbers"><b>自测留档：</b>5 个真实派单案例回放；回执末行总账恒等式（干 N 项 = 成 + 改 + 弃）；失败 3 次停。</p>
+          <p class="oss-boundary">边界：本仓只有格式与流程。方法论本体不在仓内——给工人配什么方法，各团队自订。</p>
+          <div class="oss-foot">
+            <span class="oss-license">AGPL-3.0</span>
+            <a class="btn" href="https://github.com/renshiliao/paipai">仓库：paipai</a>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ② 玩具级 vs 特征级 对照 -->
+    <section id="compare" aria-label="玩具级与特征级对照">
+      <p class="block-kicker">toy-grade vs agi-feature-grade</p>
+      <h2>玩具级 vs 特征级：同一根骨，两个量级</h2>
+      <p class="section-lede">星轴自叙事是玩具级的插座，信卡库 MCP 是特征级的记忆系统。两栏对照，看清楚每一级拿在手里的是什么。</p>
+
+      <div class="compare-grid">
+        <div class="ch"></div>
+        <div class="ch ch--toy"><strong>玩具级 · 星轴自叙事</strong><span>玩具级的插座，专业级的用途</span></div>
+        <div class="ch ch--agi"><strong>特征级 · 信卡库 MCP</strong><span>特征级记忆系统</span></div>
+
+        <div class="row-label">拿到手是什么</div>
+        <div class="cell">两个纯文本文件（星件 + 轴件），跑出「我是谁」的叙事三件：<b>自叙事账、成长叙事、对己卡组</b>。</div>
+        <div class="cell">一个记忆服务器：写卡、读卡、检索、验证四口，给任何 MCP 客户端装上<b>可对账的卡片记忆</b>。</div>
+
+        <div class="row-label">跑在哪</div>
+        <div class="cell">零神经、零模型调用，查表、规则、模板纯脚本；CLI 与 WASM 双版同核，<b>离线可跑</b>。</div>
+        <div class="cell">Python 3.9+ 标准库、<b>零第三方依赖</b>，stdio JSON-RPC 2.0 即插即用。</div>
+
+        <div class="row-label">开箱验货</div>
+        <div class="cell">5 个样本下载即玩；压测：<b>20/20 并发指纹一致、10 万行轴 &lt;0.7 秒、恶意输入 32/32 带码拒收</b>。</div>
+        <div class="cell"><b>40 项验收真跑全过</b>；20/20 源文件 SPDX 头；协议客户端与 Codex 双真插实测留档。</div>
+
+        <div class="row-label">下限与上限</div>
+        <div class="cell">下限低：<b>下载就玩</b>，翻轴、看立卡、读叙事，玩懂了再改。</div>
+        <div class="cell">上限高：<b>插上就用</b>，每张卡带来源与证据级，每一步可回溯。</div>
+
+        <div class="row-label row-last">许可证 / 状态</div>
+        <div class="cell cell-last">AGPL-3.0-or-later；已上架（GitHub）。</div>
+        <div class="cell cell-last">AGPL-3.0-or-later；MCP 已上架（GitHub），记忆部定案中。</div>
+      </div>
+
+      <p class="compare-close">收束一句：<b>玩具级是入口，特征级是底座。</b>两条线同一根骨——每一步都可对账、可回溯，查不出就写「未采到」，不编。</p>
+
+      <!-- 玩法三式 -->
+      <div class="play-grid" style="margin-top:22px">
+        <article class="play-card">
+          <h3>电影素材永动机</h3>
+          <p>给角色立星立轴，叙事素材源源不断：同一个角色，换一条轴就是一部新片的来路。</p>
+        </article>
+        <article class="play-card">
+          <h3>私人智库</h3>
+          <p>给自己攒一屋子带星带轴的智囊：每位顾问 = 一份星件 + 一条轴，有记忆、有立场、有来路；问策时翻各自的账，看谁的话立得住。</p>
+        </article>
+        <article class="play-card">
+          <h3>先贤馆</h3>
+          <p>给历史上的智者立星立轴，请圣贤进门当顾问：从公有领域人物起步最稳（如《西游记》孙悟空样本），把圣贤的言行收成轴、把志向立成星，随请随问。</p>
+        </article>
+      </div>
+
+      <div class="quote-box">
+        <h3>贞观朝堂例句（先贤馆玩法）</h3>
+        <blockquote>上问魏征曰：「人主何为而明，何为而暗？」对曰：「兼听则明，偏信则暗。」</blockquote>
+        <cite>——《资治通鉴·卷一九二·唐纪八·太宗贞观二年》</cite>
+        <p class="oss-note">给魏征立星立轴，问一句「此事当如何」，这句就带着它的来路回到案头——每句答策都拖着出处走。随仓范本为三井寿等 5 个样本；魏征这类历史范本走先贤馆玩法自立，例句先摆在这里。</p>
+      </div>
+    </section>
+
+    <!-- ③ 已上架 -->
+    <section id="shipped" aria-label="已上架的仓">
+      <p class="block-kicker">already on github / 已上架</p>
+      <h2>已上架：真链在此</h2>
+      <p class="section-lede">这四仓已经在 GitHub 上，链接是真链，随时可点。</p>
+      <div class="shelf-strip">
+        <div class="shelf-item">
+          <strong>信卡库 xinka-mcp</strong>
+          <span class="tag">AGPL-3.0-or-later</span>
+          <a class="btn" href="https://github.com/renshiliao/xinka-mcp">看仓库</a>
+          <span class="oss-repo">信卡库的标准 MCP Server——写卡/读卡/检索/验证四口，可对账的卡片记忆；先定格式，再谈智能，数据在你本地，算法与数据分离</span>
+        </div>
+        <div class="shelf-item">
+          <strong>星轴自叙事 xingzhou-narrative</strong>
+          <span class="tag">AGPL-3.0-or-later</span>
+          <a class="btn" href="https://github.com/renshiliao/xingzhou-narrative">看仓库</a>
+          <span class="oss-repo">星（未来·方向）+ 轴（过去·来路）→ 自叙事：一个系统对自己的叙述——轴，是它走过的路；星，是它要走的方向；带着来路走向方向，这就是完整的自我</span>
+        </div>
+        <div class="shelf-item">
+          <strong>时间器官 time-organ</strong>
+          <span class="tag">BSD-3-Clause</span>
+          <a class="btn" href="https://github.com/renshiliao/time-organ">看仓库</a>
+          <span class="oss-repo">给 AI 与自动化引擎一双「时间感」——机钟读取、NTP 校时、时序账、半衰期、时间感知 API；库 + MCP Server 双形态，时间只许机器注入</span>
+        </div>
+        <div class="shelf-item">
+          <strong>派派 paipai</strong>
+          <span class="tag">AGPL-3.0</span>
+          <a class="btn" href="https://github.com/renshiliao/paipai">看仓库</a>
+          <span class="oss-repo">开源三柱之三（派派）——把「让 AI 干活」变成可对账的工程：查册、派活、收活、坑账回流，四步一扇门，一单一回执</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ④ 未来位子 -->
+    <section id="future" aria-label="未来位子">
+      <p class="block-kicker">next on the shelf / 未来位子</p>
+      <h2>未来位子</h2>
+      <p class="section-lede">这页是长期货架。后面的开源件出一件挂一件，位子先留着——发版序已排定，商业产品之前，三柱全立。</p>
+      <div class="ghost-grid">
+        <div class="ghost-card">
+          <strong>未来位子 · 其一</strong>
+          <span>虚位以待 · 即将开源</span>
+        </div>
+        <div class="ghost-card">
+          <strong>未来位子 · 其二</strong>
+          <span>虚位以待 · 即将开源</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 学者推荐 -->
+    <section id="scholars" aria-label="学者推荐">
+      <p class="block-kicker">for scholars / 学者推荐</p>
+      <h2>学者推荐</h2>
+      <div class="quote-box" style="margin-top:0">
+        <h3>课卡制（信卡的学习用法）</h3>
+        <p style="margin:0 0 10px;font-size:1.02rem">这是信卡最初的用法之一——一课一卡、学习即贴卡。</p>
+        <p class="oss-note">更多，留白——学者自己来问。</p>
+        <div class="hero-cta" style="margin-top:14px">
+          <a class="btn" href="xinka-students.html">学者·信卡技能介绍</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑤ 收尾 / 联系 -->
+    <section id="contact" aria-label="联系">
+      <div class="closing">
+        <p class="closing-line">以上是骨架，不是魔法。骨架之上还有完整版，合作方闭门可见——来谈。</p>
+        <p>门牌见主页页尾「闭门信箱」。</p>
+        <div class="hero-cta">
+          <a class="btn btn--primary" href="https://xinka.ai/">回主页</a>
+          <a class="btn" href="https://github.com/renshiliao">GitHub 账号</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>xinka.ai / github open source</span>
+      <span>数字分「实测」与「设计口径」两种，随数标注 · 未上架的仓不挂假链</span>
+    </footer>
+
+  </main>
+</body>
+</html>

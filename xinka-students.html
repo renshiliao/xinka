@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="知识单元：把一节课装进一张卡——给学生的知识收纳引擎。三张卡管一整个学期：事件卡、知识卡、信卡，查得到、用得上。">
+  <title>知识单元：把一节课装进一张卡 · 学者·信卡技能介绍 — 信卡 XINKA</title>
+  <meta name="theme-color" content="#081016">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="信卡 Xinka">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="知识单元：把一节课装进一张卡 · 学者·信卡技能介绍">
+  <meta property="og:description" content="给学生的知识收纳引擎。三张卡管一整个学期：事件卡、知识卡、信卡——查得到、用得上的小卡，考前想查哪块查哪块，对着卡复习。">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #081016;
+      --surface: #0d1820;
+      --surface-2: #12222c;
+      --line: #27404c;
+      --line-strong: #3b5b68;
+      --text: #e8f0f2;
+      --muted: #91a7af;
+      --dim: #657d86;
+      --human: #e0a65b;
+      --human-soft: #2b2117;
+      --ai: #65d0c5;
+      --ai-soft: #102b2b;
+      --fact: #8dd6b0;
+      --judgment: #d8bd77;
+      --focus: #9ce7df;
+      --radius: 14px;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      min-width: 320px;
+      background: var(--bg);
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% -10%, rgba(224, 166, 91, .08), transparent 32rem),
+        radial-gradient(circle at 90% 0%, rgba(101, 208, 197, .08), transparent 34rem),
+        var(--bg);
+      font-family: var(--sans);
+      line-height: 1.65;
+    }
+
+    a { color: var(--ai); }
+
+    a:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .shell {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* ---------- ① 页内导航条（吸顶，锚点跳转） ---------- */
+    .page-nav {
+      position: sticky;
+      z-index: 30;
+      top: 0;
+      margin-bottom: 22px;
+      padding: 10px 0 12px;
+      background: var(--bg);
+    }
+
+    .nav-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 6px;
+      padding: 10px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: rgba(8, 16, 22, .94);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    }
+
+    .nav-brand {
+      margin-right: 6px;
+      color: var(--human);
+      font-family: var(--mono);
+      font-size: .78rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .nav-link {
+      padding: 7px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: .88rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover { border-color: var(--ai); color: var(--ai); }
+
+    .nav-back {
+      margin-left: auto;
+      padding: 7px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .74rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav-back:hover { border-color: var(--ai); color: var(--ai); }
+
+    /* ---------- ② hero ---------- */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+      gap: 26px;
+      align-items: end;
+      margin: 8px 0 26px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px;
+      color: var(--ai);
+      font-family: var(--mono);
+      font-size: .78rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 24px;
+      height: 1px;
+      background: currentColor;
+      content: "";
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 980px;
+      font-size: clamp(1.75rem, 3.6vw, 3.3rem);
+      line-height: 1.18;
+      letter-spacing: -.02em;
+    }
+
+    .hero-sub {
+      margin: 14px 0 0;
+      color: var(--human);
+      font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+      font-weight: 600;
+    }
+
+    .hero .lede {
+      max-width: 76ch;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 1.04rem;
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      color: var(--text);
+      background: var(--surface);
+      font-size: .95rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn:hover { border-color: var(--ai); color: var(--ai); }
+
+    .btn--primary {
+      border-color: color-mix(in srgb, var(--ai), transparent 25%);
+      color: #06231f;
+      background: var(--ai);
+      font-weight: 600;
+    }
+
+    .btn--primary:hover { color: #06231f; background: color-mix(in srgb, var(--ai), white 18%); }
+
+    .hero-note {
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(13, 24, 32, .76);
+    }
+
+    .hero-note strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ai);
+      font-family: var(--mono);
+      font-size: .8rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .hero-note p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+    /* ---------- ③ 通用区块 ---------- */
+    .section {
+      margin-top: 30px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(13, 24, 32, .74);
+      scroll-margin-top: 84px;
+    }
+
+    .section-kicker {
+      margin: 0 0 6px;
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+      line-height: 1.3;
+    }
+
+    .section-lead {
+      max-width: 72ch;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    /* ---------- ④ 痛点开场 ---------- */
+    .pain-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pain-list li {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: #cedadd;
+      font-size: .95rem;
+    }
+
+    .pain-list li::before {
+      margin-right: 8px;
+      color: var(--human);
+      content: "◆";
+      font-size: .7rem;
+    }
+
+    .pain-takeaway {
+      margin: 18px 0 0;
+      padding: 14px 16px;
+      border-left: 3px solid color-mix(in srgb, var(--human), transparent 30%);
+      border-radius: 0 10px 10px 0;
+      background: var(--human-soft);
+      color: var(--text);
+      font-size: 1.02rem;
+    }
+
+    /* ---------- ⑤ 三张卡 ---------- */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .skill-card {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .skill-card:hover { border-color: color-mix(in srgb, var(--ai), transparent 30%); }
+
+    .card-topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .card-index { color: var(--dim); font-family: var(--mono); font-size: .72rem; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: .68rem;
+      white-space: nowrap;
+    }
+
+    .tag--category { color: var(--human); }
+
+    .skill-card h3 { margin: -4px 0 0; font-size: 1.12rem; line-height: 1.35; }
+
+    .field-label {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .68rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .skill-card p { margin: 0; color: #cedadd; font-size: .92rem; }
+
+    .skill-card .example {
+      margin-top: auto;
+      padding-left: 12px;
+      border-left: 2px solid color-mix(in srgb, var(--human), transparent 45%);
+    }
+
+    /* ---------- ⑥ 核心理念 ---------- */
+    .idea-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .idea-item {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .idea-item strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ai);
+      font-size: 1.05rem;
+    }
+
+    .idea-item p { margin: 0; color: var(--muted); font-size: .94rem; }
+
+    /* ---------- ⑦ 血泪史与省钱账 ---------- */
+    .story-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(260px, .8fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .story-text p {
+      margin: 0 0 12px;
+      color: #cedadd;
+      font-size: .97rem;
+    }
+
+    .story-text p:last-child { margin-bottom: 0; }
+
+    .story-note {
+      align-self: start;
+      padding: 18px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .018);
+    }
+
+    .story-note strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--human);
+      font-family: var(--mono);
+      font-size: .8rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .story-note p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+    /* ---------- ⑧ 四步入门 ---------- */
+    .step-line {
+      margin: 18px 0 0;
+      color: var(--human);
+      font-family: var(--mono);
+      font-size: 1.02rem;
+      letter-spacing: .04em;
+    }
+
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .step-item {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+
+    .step-no {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ai);
+      font-family: var(--mono);
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .step-item strong { display: block; margin-bottom: 4px; font-size: 1.02rem; }
+
+    .step-item span { color: var(--muted); font-size: .87rem; }
+
+    .step-foot {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    /* ---------- ⑨ 结尾 ---------- */
+    .ending {
+      margin-top: 30px;
+      padding: 34px 28px;
+      border: 1px solid color-mix(in srgb, var(--ai), transparent 62%);
+      border-radius: 18px;
+      background: rgba(13, 24, 32, .74);
+      text-align: center;
+      scroll-margin-top: 84px;
+    }
+
+    .ending h2 { margin: 0; font-size: clamp(1.35rem, 2.2vw, 1.85rem); }
+
+    .ending p {
+      max-width: 68ch;
+      margin: 14px auto 0;
+      color: var(--muted);
+      font-size: .99rem;
+    }
+
+    .ending-slogan {
+      margin-top: 18px;
+      color: var(--text) !important;
+      font-size: 1.18rem !important;
+      font-weight: 600;
+    }
+
+    /* ---------- ⑩ 页脚 ---------- */
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px 18px;
+      margin-top: 26px;
+      padding: 18px 4px 6px;
+      border-top: 1px solid var(--line);
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .74rem;
+    }
+
+    .footer strong { color: var(--muted); }
+
+    .footer .back-home {
+      color: var(--ai);
+      text-decoration: none;
+    }
+
+    .footer .back-home:hover { text-decoration: underline; }
+
+    /* ---------- 响应式三档 ---------- */
+    @media (max-width: 1180px) {
+      .hero { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 980px) {
+      .card-grid, .idea-grid { grid-template-columns: 1fr; }
+      .step-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .story-body { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 820px) {
+      .shell { padding: 14px; }
+      .pain-list { grid-template-columns: 1fr; }
+      .section { padding: 22px 18px; }
+    }
+
+    @media (max-width: 560px) {
+      .nav-bar { gap: 6px; }
+      .nav-brand { width: 100%; margin: 0 0 2px; }
+      .nav-back { margin-left: 0; }
+      /* 吸顶条在窄档折行变高，锚点让位随之加大 */
+      .section, .ending { scroll-margin-top: 180px; }
+      .hero-cta .btn { width: 100%; justify-content: center; }
+      .step-grid { grid-template-columns: 1fr; }
+      .footer { flex-direction: column; }
+      .ending { padding: 26px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+
+    <!-- ① 页内导航条：吸顶 + 锚点平滑滚动 -->
+    <nav class="page-nav" aria-label="页内导航">
+      <div class="nav-bar">
+        <span class="nav-brand">xinka / study cards</span>
+        <a class="nav-link" href="#pain">痛点</a>
+        <a class="nav-link" href="#cards">三张卡</a>
+        <a class="nav-link" href="#idea">理念</a>
+        <a class="nav-link" href="#start">入门</a>
+        <a class="nav-back" href="index.html">← 返回首页</a>
+      </div>
+    </nav>
+
+    <!-- ② hero：主标题（候选一）+ 副标题区（候选二 + 备用横幅语） -->
+    <header class="hero">
+      <div>
+        <p class="eyebrow"><span>信卡 XINKA</span> / study cards</p>
+        <h1>知识单元：把一节课装进一张卡</h1>
+        <p class="hero-sub">给学生的知识收纳引擎</p>
+        <p class="lede">高效学习，从一张卡开始——把学过的东西拆成一张张查得到、用得上的小卡，一科攒一叠，考前想查哪块查哪块，对着卡复习。</p>
+        <div class="hero-cta">
+          <a class="btn btn--primary" href="#cards">看看三张卡</a>
+          <a class="btn" href="#start">四步入门</a>
+        </div>
+      </div>
+      <aside class="hero-note" aria-label="技能定位说明">
+        <strong>one skill / one job</strong>
+        <p>这套方法只做一件事：把学过的东西拆成一张张小卡。一科攒一叠，考前想查哪块查哪块，对着卡复习。</p>
+      </aside>
+    </header>
+
+    <!-- ③ 痛点开场 -->
+    <section class="section" id="pain" aria-labelledby="pain-title">
+      <p class="section-kicker">scene / 痛点开场</p>
+      <h2 id="pain-title">这些场景，你大概不陌生</h2>
+      <ul class="pain-list">
+        <li>上课猛记笔记，下课忘掉大半。笔记本抄得不少，考前翻起来却找不到重点。</li>
+        <li>老师讲了 45 分钟，哪句是重点、哪句是铺垫，课后依然分不清。</li>
+        <li>笔记散在几个本子、几个 APP 里，考前一晚翻不完，只能通宵硬背。</li>
+        <li>学了就忘、忘了再学，时间花了不少，效果不成正比。</li>
+      </ul>
+      <p class="pain-takeaway">问题通常不在努力程度，而在知识的存放方式——东西都在，只是调不出来。</p>
+    </section>
+
+    <!-- ④ 三张卡 -->
+    <section class="section" id="cards" aria-labelledby="cards-title">
+      <p class="section-kicker">cards / 三张卡，管一整个学期</p>
+      <h2 id="cards-title">三张卡，管一整个学期</h2>
+      <p class="section-lead">这套方法只做一件事：把学过的东西拆成<strong>一张张小卡</strong>。一科攒一叠，考前想查哪块查哪块，对着卡复习。</p>
+      <div class="card-grid">
+        <article class="skill-card">
+          <div class="card-topline">
+            <span class="card-index">CARD ①</span>
+            <span class="tag tag--category">事件卡</span>
+          </div>
+          <h3>事件卡 = 解题方法卡</h3>
+          <p>记「这道题当时是怎么解出来的」：用的什么法子、最后做没做出来、在哪学的、什么时候记的。一题一卡。</p>
+          <div class="example">
+            <span class="field-label">案例 · 数学二次函数</span>
+            <p>二次函数求最值的应用题（利润最大那种），卡了两回——后来用「配方找顶点＋盯住定义域」做出来了，记一张事件卡。下次再遇同类题，先翻卡。<strong>好处：同类题提笔就有思路，不用从头琢磨。</strong></p>
+          </div>
+        </article>
+        <article class="skill-card">
+          <div class="card-topline">
+            <span class="card-index">CARD ②</span>
+            <span class="tag tag--category">知识卡</span>
+          </div>
+          <h3>知识卡 = 定理公式要点卡</h3>
+          <p>记定理、公式、要点，并且标好<strong>哪些量可以换</strong>：同一个公式，换个条件照样用。课本上的重点，直接抄成卡。</p>
+          <div class="example">
+            <span class="field-label">案例 · 物理欧姆定律</span>
+            <p>欧姆定律一张卡：正面写 I＝U/R 和适用条件，边上标好三个量怎么互求——求电流、求电压、求电阻，翻的都是这一张。<strong>好处：公式和用法一眼就在眼前，复习不用翻课本。</strong></p>
+          </div>
+        </article>
+        <article class="skill-card">
+          <div class="card-topline">
+            <span class="card-index">CARD ③</span>
+            <span class="tag tag--category">信卡</span>
+          </div>
+          <h3>信卡 = 老师划重点/答疑笔记卡</h3>
+          <p>谁来信、要点、时间，三样钉死。老师课上划的重点、答疑时讲的关键话，落成卡，不再散失。</p>
+          <div class="example">
+            <span class="field-label">案例 · 英语时态</span>
+            <p>英语老师课上划重点：「这次月考，时态题重点在现在完成时和一般过去时的区别。」多数人听完就忘，你记成一张信卡。考前翻出来，这句话就你手里有。<strong>好处：复习直接对着考点使劲，少做无用功。</strong></p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ⑤ 核心理念 -->
+    <section class="section" id="idea" aria-labelledby="idea-title">
+      <p class="section-kicker">idea / 核心理念</p>
+      <h2 id="idea-title">核心理念：为什么学得快</h2>
+      <div class="idea-grid">
+        <div class="idea-item">
+          <strong>一节课一张卡。</strong>
+          <p>核心就这一条：一节课真正需要留下的，往往一张卡就够。老师讲一张卡的内容要花 45 分钟——要么老师讲得冗，要么学生收得散；几句话能说清的事，不必用一整节课灌。学生要做的，是把那张卡拿到手。</p>
+        </div>
+        <div class="idea-item">
+          <strong>高效学习，从一张卡开始。</strong>
+          <p>所谓学得快，多数不是天赋差距，而是方法差距：重点早就拆成卡，随时查得到、复习得快，自然比反复重学更省力。把这套方法用顺手的人，在同学眼里就是会学习的人。</p>
+        </div>
+        <div class="idea-item">
+          <strong>学了不白学。</strong>
+          <p>做出来的方法进「本事账」，下次遇到先查账：这法子我用成过。学了就攒，越攒越厚——每节课、每道题，都变成以后能反复用的家底。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑥ 血泪史与省钱账 -->
+    <section class="section" id="story" aria-labelledby="story-title">
+      <p class="section-kicker">story / 踩过的坑</p>
+      <h2 id="story-title">血泪史</h2>
+      <div class="story-body">
+        <div class="story-text">
+          <p>这套方法不是拍脑袋想出来的，是踩坑踩出来的。当时背了就忘、忘了再背，笔记散在几个本子里，考前一晚翻不完，只能通宵硬背——时间花了不少，效果不成正比。</p>
+          <p>后来才想明白：问题不在不够努力，在笔记太散、重点没拆开。把学过的东西拆成卡、一科攒一叠之后，考前不用再通宵翻本子，对着卡一科一科过，心里踏实多了。</p>
+        </div>
+        <aside class="story-note" aria-label="时间账要点">
+          <strong>time / 时间账</strong>
+          <p>背了就忘，等于反复重来；拆成卡，整理一次以后反复用。省下来的时间，够睡饱、够刷题、够过一学期。</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ⑦ 四步入门 -->
+    <section class="section" id="start" aria-labelledby="start-title">
+      <p class="section-kicker">start / 上手</p>
+      <h2 id="start-title">四步入门</h2>
+      <p class="step-line">用起来 → 记卡 → 查卡 → 复习。</p>
+      <div class="step-grid">
+        <div class="step-item">
+          <span class="step-no">Step 1</span>
+          <strong>用起来</strong>
+          <span>先把这个方法用起来。</span>
+        </div>
+        <div class="step-item">
+          <span class="step-no">Step 2</span>
+          <strong>记卡</strong>
+          <span>每天把学的重点记成卡，一节课一张卡。</span>
+        </div>
+        <div class="step-item">
+          <span class="step-no">Step 3</span>
+          <strong>查卡</strong>
+          <span>考前想查哪块就查哪块。</span>
+        </div>
+        <div class="step-item">
+          <span class="step-no">Step 4</span>
+          <strong>复习</strong>
+          <span>对着摊开的卡复习。</span>
+        </div>
+      </div>
+      <p class="step-foot">到此为止，没有第五步。</p>
+    </section>
+
+    <!-- ⑧ 结尾 -->
+    <section class="ending" id="ending" aria-labelledby="ending-title">
+      <h2 id="ending-title">结尾：攒下的，都是自己的</h2>
+      <p>笔记记在本子里，只有自己知道；卡攒成一叠，学过的就都攒在自己手里——本事是真的，底气是自己的。<strong>被看见是水到渠成的事，不是目的</strong>。</p>
+      <p><strong>卡是数据</strong>：可以抄录成学习卡，自己的卡攒自己的库，走到哪带到哪。</p>
+      <p class="ending-slogan">高效学习，从一张卡开始。把学过的，一张张攒进自己手里。</p>
+    </section>
+
+    <!-- ⑨ 页脚 -->
+    <footer class="footer">
+      <span><strong>SITE</strong> 信卡 XINKA · 可信知识记录标准</span>
+      <span><strong>PAGE</strong> 学者·信卡技能介绍 · 独立页</span>
+      <span><strong>BUILD</strong> 2026-11-03T03:13:16+08:00</span>
+      <span><a class="back-home" href="index.html">← 返回首页</a></span>
+    </footer>
+
+  </main>
+</body>
+</html>

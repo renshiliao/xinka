@@ -1,529 +1,1390 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xinka 信卡 · 可信知识记录标准 — 开源规范与免费校验器</title>
-<meta name="description" content="Xinka（信卡）是可信知识的最小单元：一条结论按六要素记录——源（出处）、采（采集时间）、信（置信两档）、鲜（保鲜期）、位（位置）、证（互证记录），机器可校验、到期自动降级。开源标准，schema 与校验器免费，公文引用、数据核对、台账留痕可查可溯。">
-<meta name="keywords" content="Xinka,信卡,可信知识,知识记录标准,JSON schema,校验器,引用溯源">
-<link rel="canonical" href="https://xinka.ai/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Xinka 信卡 · 可信知识记录标准">
-<meta property="og:description" content="一条结论配六个要素：源、采、信、鲜、位、证。机器可校验，到期自动降级。开源标准，免费使用。">
-<meta property="og:url" content="https://xinka.ai/">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "DefinedTermSet",
-      "@id": "https://xinka.ai/#xinka",
-      "name": "Xinka 信卡标准",
-      "alternateName": ["Xinka", "信卡"],
-      "url": "https://xinka.ai/",
-      "description": "Xinka（信卡）是可信知识的最小单元：一条结论按六个要素记录——源（出处）、采（采集时间）、信（置信两档：已验证/待核验）、鲜（保鲜期）、位（知识树位置）、证（互证记录）。它是一套开源的可信知识记录标准，规定结论如何记录、如何核验、何时过期；不是产品。schema 与校验器免费公开。",
-      "license": "https://github.com/renshiliao/xinka",
-      "inDefinedTermSet": { "@id": "https://xinka.ai/#xinka" },
-      "definedTerm": [
-        {
-          "@type": "DefinedTerm",
-          "name": "源（source_url）",
-          "description": "原始出处 URL。无出处则任何引用不成立，可点可查可回溯。",
-          "termCode": "source_url"
-        },
-        {
-          "@type": "DefinedTerm",
-          "name": "采（collected_at）",
-          "description": "采集时刻（RFC 3339 时区格式）。同一网页内容会变，不记采集时间则档案无法复现。",
-          "termCode": "collected_at"
-        },
-        {
-          "@type": "DefinedTerm",
-          "name": "信（trust_level）",
-          "description": "置信度两档：verified 已验证（须三个独立来源互证）/ pending 待核验。宁低勿高。",
-          "termCode": "trust_level"
-        },
-        {
-          "@type": "DefinedTerm",
-          "name": "鲜（freshness_until）",
-          "description": "保鲜期截止时刻。到期未复核自动降级为待核验，结论不会永远有效。",
-          "termCode": "freshness_until"
-        },
-        {
-          "@type": "DefinedTerm",
-          "name": "位（position）",
-          "description": "知识树内坐标，用 / 分层（如 science/chemistry/boiling-point），让结论成体系不成孤岛。",
-          "termCode": "position"
-        },
-        {
-          "@type": "DefinedTerm",
-          "name": "证（verification）",
-          "description": "互证记录：校验方法、参与互证的独立来源列表、校验时刻。孤证不立，机器可查。",
-          "termCode": "verification"
-        }
-      ]
-    },
-    {
-      "@type": "TechArticle",
-      "headline": "Xinka 信卡：可信知识的记录标准（单页说明）",
-      "description": "本页说明 Xinka 信卡标准：为什么 AI 答案需要出处与留痕、六要素定义、十条机器可查规则、九类适用人群、JSON 格式示例、三步上手与边界声明。",
-      "url": "https://xinka.ai/",
-      "inLanguage": "zh-CN",
-      "datePublished": "2026-10-06",
-      "dateModified": "2026-10-07",
-      "author": { "@type": "Person", "name": "任世燎", "alternateName": "Ren Shiliao" },
-      "mainEntity": { "@id": "https://xinka.ai/#xinka" }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="信卡 Xinka：为降低 AI 幻觉而生的知识标准——强制来源、证据级、触发条件。免费在线校验器与开源规范，人读 AI 取同源双渲染。">
+  <title>信卡 Xinka · 为降低AI幻觉而生的知识标准 — xinka.ai</title>
+
+  <!-- 门面元信息：规范化 + 社交分享预览卡（改域名只动页首 XINKA_CONFIG 与下面这几行 URL） -->
+  <link rel="canonical" href="https://xinka.ai/">
+  <meta name="theme-color" content="#081016">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="信卡 Xinka">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:url" content="https://xinka.ai/">
+  <meta property="og:title" content="信卡 Xinka · 为降低AI幻觉而生的知识标准">
+  <meta property="og:description" content="强制来源、证据级与触发条件——AI 取到的每个字都能回溯到出处，幻觉难有落脚点。免费在线校验器与开源规范，人读 AI 取同源双渲染。">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="信卡 Xinka · 为降低AI幻觉而生的知识标准">
+  <meta name="twitter:description" content="强制来源、证据级与触发条件——AI 取到的每个字都能回溯到出处，幻觉难有落脚点。免费在线校验器与开源规范，人读 AI 取同源双渲染。">
+
+  <!-- ====== 占位变量集中处：换真只改这一块（详见同目录 README.md 占位清单） ====== -->
+  <script>
+    window.XINKA_CONFIG = {
+      siteDomain: "xinka.ai",                          // 站点域名
+      validatorUrl: "https://xinka.ai/",               // 免费校验器入口（现站）
+      githubUrl: "https://github.com/renshiliao/xinka",       // GitHub 开源包真链（renshiliao/xinka，Apache-2.0）
+      license: "Apache-2.0",                           // 开源协议字样（占位）
+      buildTime: "2026-11-01T01:47:36+08:00"           // 生成时间戳（机械 date 取）
+    };
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "信卡 Xinka 知识类样例卡数据",
+    "description": "知识类信卡同源双渲染样本：左侧供人类阅读，右侧供 AI 结构化提取。每张卡强制携带来源、证据级与触发条件。",
+    "url": "https://xinka.ai/",
+    "inLanguage": "zh-CN",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "isAccessibleForFree": true,
+    "keywords": ["信卡", "Xinka", "知识卡", "反幻觉", "事实", "判断", "机器可读", "校验器"],
+    "variableMeasured": ["id", "category", "name", "definition", "rationale", "evidenceLevel", "triggerCondition", "triggerBasis", "sourceLocator"]
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #081016;
+      --surface: #0d1820;
+      --surface-2: #12222c;
+      --line: #27404c;
+      --line-strong: #3b5b68;
+      --text: #e8f0f2;
+      --muted: #91a7af;
+      --dim: #657d86;
+      --human: #e0a65b;
+      --human-soft: #2b2117;
+      --ai: #65d0c5;
+      --ai-soft: #102b2b;
+      --fact: #8dd6b0;
+      --judgment: #d8bd77;
+      --focus: #9ce7df;
+      --radius: 14px;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-  ]
-}
-</script>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  :root {
-    --ink:#1a1a2e; --dim:#555; --line:#e2e2ea; --paper:#ffffff; --wash:#fafafa;
-    --acc:#302b63; --gold:#8a6d1f; --gold-bg:#fdf9ec;
-    --dark:#14161d; --dark-fg:#c9d1d9; --code-bg:#1a1a2e;
-    --serif:"Noto Serif SC","Songti SC","SimSun",Georgia,serif;
-    --sans:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
-    --mono:"SF Mono","Consolas","Courier New",monospace;
-  }
-  html { scroll-behavior:smooth; }
-  body { font-family:var(--sans); color:var(--ink); background:var(--paper); line-height:1.75; font-size:16px; }
-  .wrap { max-width:880px; margin:0 auto; padding:0 24px; }
 
-  /* 深色头部条——克制的 IT 气质 */
-  .topbar { background:var(--dark); color:var(--dark-fg); font-family:var(--mono); font-size:.8rem; }
-  .topbar .wrap { display:flex; justify-content:space-between; align-items:center; padding:10px 24px; flex-wrap:wrap; gap:8px; }
-  .topbar b { color:#fff; letter-spacing:2px; }
-  .topbar .sep { color:#555; }
-  .topbar a { color:var(--dark-fg); text-decoration:none; border-bottom:1px dotted #444; }
-  .topbar a:hover { color:#fff; }
+    * { box-sizing: border-box; }
 
-  /* 首屏——一屏内讲清这是什么 */
-  header { padding:72px 0 48px; border-bottom:1px solid var(--line); }
-  .kicker { font-size:.85rem; letter-spacing:3px; color:var(--gold); margin-bottom:20px; }
-  h1 { font-family:var(--serif); font-size:2.9rem; line-height:1.25; font-weight:700; color:var(--acc); letter-spacing:2px; }
-  .lede { margin-top:24px; font-size:1.12rem; color:var(--ink); max-width:38em; }
-  .lede strong { color:var(--acc); }
-  .en { margin-top:12px; font-size:.9rem; color:var(--dim); font-family:var(--mono); }
+    html {
+      min-width: 320px;
+      background: var(--bg);
+      scroll-behavior: smooth;
+    }
 
-  /* 页内目录——锚点跳段 */
-  nav.toc { border-bottom:1px solid var(--line); background:var(--wash); }
-  nav.toc .wrap { padding:14px 24px; }
-  nav.toc .toc-title { font-size:.78rem; letter-spacing:2px; color:var(--dim); margin-bottom:8px; }
-  nav.toc ol { list-style:none; display:flex; flex-wrap:wrap; gap:8px; }
-  nav.toc a { display:inline-block; padding:5px 14px; border:1px solid var(--line); border-radius:999px; background:var(--paper);
-    font-size:.85rem; color:var(--acc); text-decoration:none; }
-  nav.toc a:hover { border-color:var(--acc); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% -10%, rgba(224, 166, 91, .08), transparent 32rem),
+        radial-gradient(circle at 90% 0%, rgba(101, 208, 197, .08), transparent 34rem),
+        var(--bg);
+      font-family: var(--sans);
+      line-height: 1.65;
+    }
 
-  section { padding:52px 0; border-bottom:1px solid var(--line); }
-  .secnum { font-size:.8rem; letter-spacing:2px; color:var(--dim); margin-bottom:8px; font-family:var(--mono); }
-  h2 { font-family:var(--serif); font-size:1.6rem; color:var(--acc); font-weight:700; margin-bottom:18px; letter-spacing:1px; }
-  h3 { font-size:1rem; color:var(--acc); margin:22px 0 10px; }
-  p { margin:12px 0; }
-  p.dim { color:var(--dim); font-size:.95rem; }
-  a.inline { color:var(--acc); }
+    button, input, select { font: inherit; }
 
-  /* 规格表 */
-  .tblwrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:22px; }
-  table { width:100%; border-collapse:collapse; font-size:.93rem; min-width:560px; }
-  th,td { padding:12px 14px; text-align:left; border:1px solid var(--line); vertical-align:top; }
-  th { background:var(--wash); font-weight:600; color:var(--acc); font-size:.85rem; letter-spacing:1px; white-space:nowrap; }
-  td:first-child { font-family:var(--serif); font-weight:700; color:var(--acc); white-space:nowrap; }
-  td code, p code, li code { font-family:var(--mono); font-size:.85em; background:var(--wash); padding:1px 6px; border:1px solid var(--line); border-radius:3px; }
+    button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 3px;
+    }
 
-  /* 代码 / schema 卡片 */
-  pre { background:var(--code-bg); color:#e8e8f0; padding:16px 18px; border-radius:6px; overflow-x:auto;
-    font-family:var(--mono); font-size:.83rem; line-height:1.6; margin:14px 0; }
-  pre code { background:none; border:none; padding:0; font-family:inherit; color:inherit; }
-  .card-label { font-family:var(--mono); font-size:.75rem; letter-spacing:2px; color:var(--dim); margin-top:20px; }
-  .copybtn { font-family:var(--mono); font-size:.8rem; padding:6px 16px; border:1px solid var(--acc); border-radius:4px;
-    background:var(--paper); color:var(--acc); cursor:pointer; margin:6px 0; }
-  .copybtn:hover { background:var(--wash); }
+    a { color: var(--ai); }
 
-  /* 是/不是——双栏 */
-  .isnot { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-top:22px; }
-  .isnot > div { padding:22px 24px; }
-  .isnot .is { background:var(--paper); border-right:1px solid var(--line); }
-  .isnot .no { background:var(--wash); }
-  .isnot h3 { font-size:.92rem; letter-spacing:2px; margin-bottom:12px; font-weight:600; }
-  .isnot .is h3 { color:var(--acc); }
-  .isnot .no h3 { color:var(--gold); }
-  .isnot li { margin:9px 0 9px 18px; font-size:.93rem; }
-  .isnot .no li { color:var(--dim); }
+    .shell {
+      width: min(1800px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+    }
 
-  /* 规则清单 */
-  .rules { margin-top:18px; border-top:1px solid var(--line); }
-  .rule { display:flex; gap:14px; padding:11px 4px; border-bottom:1px solid var(--line); font-size:.92rem; align-items:baseline; }
-  .rule .rid { font-family:var(--mono); font-weight:700; color:var(--acc); min-width:3em; }
-  .rule .rdesc b { color:var(--gold); font-weight:600; }
+    /* ---------- ① hero ---------- */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+      gap: 26px;
+      align-items: end;
+      margin: 8px 0 26px;
+    }
 
-  /* 人群条目 */
-  .persona { display:grid; grid-template-columns:150px 1fr; gap:0; border:1px solid var(--line); border-radius:6px; margin:16px 0; overflow:hidden; }
-  .persona .who { background:var(--wash); padding:20px; border-right:1px solid var(--line); }
-  .persona .who .icon { font-size:1.4rem; margin-bottom:6px; }
-  .persona h3.name { font-family:var(--serif); font-weight:700; color:var(--acc); font-size:1.02rem; margin:0; }
-  .persona .body { padding:16px 22px; }
-  .persona .body .row { margin:6px 0; font-size:.92rem; }
-  .persona .body .tag { display:inline-block; font-size:.75rem; letter-spacing:1px; color:var(--dim); border:1px solid var(--line); border-radius:3px; padding:0 8px; margin-right:8px; vertical-align:1px; }
-  .persona .body .one { margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); font-family:var(--serif); color:var(--gold); font-size:.96rem; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px;
+      color: var(--ai);
+      font-family: var(--mono);
+      font-size: .78rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
 
-  /* 三步 */
-  .steps { counter-reset:step; margin-top:18px; }
-  .step { display:flex; gap:18px; padding:14px 4px; border-bottom:1px solid var(--line); align-items:baseline; }
-  .step::before { counter-increment:step; content:counter(step,decimal-leading-zero); font-family:var(--mono); font-size:1.15rem; font-weight:700; color:var(--acc); min-width:2.2em; }
-  .step .st { font-size:.95rem; }
-  .step .st b { color:var(--acc); }
+    .eyebrow::before {
+      width: 24px;
+      height: 1px;
+      background: currentColor;
+      content: "";
+    }
 
-  blockquote { border-left:3px solid var(--acc); padding:8px 24px; margin:26px 0; font-family:var(--serif); font-size:1.1rem; color:var(--acc); }
+    h1 {
+      margin: 0;
+      max-width: 980px;
+      font-size: clamp(1.75rem, 3.6vw, 3.3rem);
+      line-height: 1.18;
+      letter-spacing: -.02em;
+    }
 
-  /* 底部行动区 */
-  .cta { padding:52px 0; }
-  .btns { display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
-  .btn { display:inline-block; padding:12px 26px; border:1px solid var(--acc); border-radius:4px; text-decoration:none; font-size:.95rem; transition:all .15s; }
-  .btn.primary { background:var(--acc); color:#fff; }
-  .btn.primary:hover { background:#241f4d; }
-  .btn.ghost { color:var(--acc); background:transparent; }
-  .btn.ghost:hover { background:var(--wash); }
+    .hero .lede {
+      max-width: 76ch;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 1.04rem;
+    }
 
-  footer { border-top:1px solid var(--line); background:var(--wash); padding:28px 24px; text-align:center; font-size:.82rem; color:var(--dim); }
-  footer a { color:var(--acc); text-decoration:none; border-bottom:1px dotted var(--line); }
-  footer .sign { margin-top:8px; }
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
 
-  /* 断点：手机单栏流式 */
-  @media(max-width:760px){
-    header { padding:48px 0 36px; }
-    h1 { font-size:2rem; letter-spacing:1px; }
-    .lede { font-size:1.02rem; }
-    section { padding:40px 0; }
-    h2 { font-size:1.35rem; }
-    .isnot { grid-template-columns:1fr; }
-    .isnot .is { border-right:none; border-bottom:1px solid var(--line); }
-    .persona { grid-template-columns:1fr; }
-    .persona .who { border-right:none; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; padding:14px 20px; }
-    .persona .who .icon { margin-bottom:0; }
-    table { font-size:.86rem; }
-    th,td { padding:9px 10px; }
-    pre { font-size:.78rem; padding:14px; }
-    .topbar .wrap { justify-content:center; text-align:center; }
-  }
-</style>
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      color: var(--text);
+      background: var(--surface);
+      font-size: .95rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn:hover { border-color: var(--ai); color: var(--ai); }
+
+    .btn--primary {
+      border-color: color-mix(in srgb, var(--ai), transparent 25%);
+      color: #06231f;
+      background: var(--ai);
+      font-weight: 600;
+    }
+
+    .btn--primary:hover { color: #06231f; background: color-mix(in srgb, var(--ai), white 18%); }
+
+    .hero-note {
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(13, 24, 32, .76);
+    }
+
+    .hero-note strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ai);
+      font-family: var(--mono);
+      font-size: .8rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .hero-note p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+    /* ---------- ② 搜索栏（视觉钩子位：主标题后、卡片区前） ---------- */
+    /* 吸顶层只固定控制面板：slogan 在条外随页滚走（让位）；
+       条身不透明 + 上下垫层 padding，任何滚动位置都不与滚动内容穿字 */
+    .search-hook {
+      position: sticky;
+      z-index: 30;
+      top: 0;
+      margin-bottom: 18px;
+      padding: 10px 0 12px;
+      background: var(--bg);
+    }
+
+    .hook-slogan {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 10px;
+      margin: 0 2px 8px;
+      color: var(--human);
+      font-size: .95rem;
+    }
+
+    .hook-slogan strong { font-size: 1.02rem; }
+
+    .hook-slogan .free-tag {
+      padding: 2px 9px;
+      border: 1px solid color-mix(in srgb, var(--human), transparent 40%);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: .72rem;
+      color: var(--human);
+    }
+
+    .control-bar {
+      display: grid;
+      grid-template-columns: minmax(240px, 1.8fr) minmax(170px, .8fr) minmax(150px, .65fr) auto;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: rgba(8, 16, 22, 1);   /* 全不透明：吸顶时底字不可透（原 .94 会微透穿字） */
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    }
+
+    .control { display: grid; gap: 5px; }
+
+    .control label {
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .7rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    input, select, button {
+      min-height: 42px;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      color: var(--text);
+      background: var(--surface);
+    }
+
+    input, select { width: 100%; padding: 9px 12px; }
+
+    button {
+      align-self: end;
+      padding: 9px 14px;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--ai); color: var(--ai); }
+
+    /* ---------- ③ 双渲染区（左右逐行一一对齐，2026-11-03 定） ---------- */
+    .dual-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+      align-items: stretch;            /* 左右两栏等高拉伸 → 底部对齐 */
+      scroll-margin-top: 132px;        /* 翻页回跳时避开吸顶搜索条 */
+    }
+
+    .pane {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(13, 24, 32, .74);
+    }
+
+    .pane--human { --accent: var(--human); --accent-soft: var(--human-soft); }
+    .pane--ai { --accent: var(--ai); --accent-soft: var(--ai-soft); }
+
+    .pane-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, var(--accent-soft), transparent 70%);
+    }
+
+    .pane-kicker {
+      margin: 0 0 4px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: .74rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .pane h2 { margin: 0; font-size: clamp(1.3rem, 2vw, 1.8rem); }
+
+    .pane-summary { margin: 7px 0 0; max-width: 56ch; color: var(--muted); font-size: .9rem; }
+
+    .count-badge {
+      flex: 0 0 auto;
+      align-self: start;
+      min-width: 88px;
+      padding: 8px 11px;
+      border: 1px solid color-mix(in srgb, var(--accent), transparent 45%);
+      border-radius: 999px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: .76rem;
+      text-align: center;
+    }
+
+    .pane-body { flex: 1 1 auto; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr;   /* 每侧 4 张单列成行，与右栏 AI 记录逐行一一对齐（2026-11-03 定） */
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .human-card {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .human-card:hover { border-color: color-mix(in srgb, var(--human), transparent 30%); }
+
+    .card-topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .card-index { color: var(--dim); font-family: var(--mono); font-size: .72rem; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: .68rem;
+      white-space: nowrap;
+    }
+
+    .tag--category { color: var(--human); }
+    .tag--fact { color: var(--fact); }
+    .tag--judgment { color: var(--judgment); }
+
+    .human-card h3 { margin: -4px 0 0; font-size: 1.12rem; line-height: 1.35; }
+
+    .field-label {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .68rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .human-card p { margin: 0; color: #cedadd; font-size: .92rem; }
+
+    .human-card .why {
+      padding-left: 12px;
+      border-left: 2px solid color-mix(in srgb, var(--human), transparent 45%);
+    }
+
+    .trigger {
+      margin-top: auto !important;
+      padding: 10px 11px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .018);
+      font-size: .84rem;
+    }
+
+    .source-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .66rem;
+    }
+
+    .ai-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      background: #09141b;
+      font-family: var(--mono);
+      font-size: .72rem;
+    }
+
+    .traffic { display: inline-flex; gap: 6px; }
+
+    .traffic i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
+    .traffic i:nth-child(1) { background: #c96b5f; }
+    .traffic i:nth-child(2) { background: #c5a25e; }
+    .traffic i:nth-child(3) { background: #64a982; }
+
+    .ai-stream { display: grid; gap: 12px; padding: 16px; align-content: start; }  /* 间距与左栏取齐 */
+
+    .ai-record {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #09151c;
+      font-family: var(--mono);
+      font-size: .77rem;
+      line-height: 1.55;
+    }
+
+    .ai-record[hidden], .human-card[hidden] { display: none; }
+
+    .record-head {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--ai);
+      background: var(--ai-soft);
+    }
+
+    .record-head::before { color: var(--dim); content: "●"; font-size: .65rem; }
+
+    .record-id { color: var(--text); }
+    .record-type { color: var(--dim); }
+
+    .ai-record dl {
+      display: grid;
+      grid-template-columns: minmax(132px, .34fr) minmax(0, 1fr);
+      margin: 0;
+    }
+
+    .ai-record dt, .ai-record dd {
+      min-width: 0;
+      margin: 0;
+      padding: 7px 11px;
+      border-bottom: 1px solid rgba(39, 64, 76, .65);
+    }
+
+    .ai-record dt {
+      overflow-wrap: anywhere;
+      color: var(--ai);
+      background: rgba(101, 208, 197, .025);
+    }
+
+    .ai-record dd { overflow-wrap: anywhere; color: #bfd0d5; }
+
+    .ai-record dl > :nth-last-child(-n + 2) { border-bottom: 0; }
+
+    .pane-foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: auto;               /* 底条钉在栏底 → 左右底边视觉取齐 */
+      padding: 11px 16px;
+      border-top: 1px solid var(--line);
+      color: var(--dim);
+      background: rgba(9, 20, 27, .8);
+      font-family: var(--mono);
+      font-size: .7rem;
+    }
+
+    .pane-foot strong { color: var(--muted); font-weight: 600; }
+
+    .empty-state {
+      display: none;
+      padding: 30px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty-state.is-visible { display: block; }
+
+    /* ---------- ③b 翻页条（每页 3 张，左右两栏同源同步翻页） ---------- */
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .pagination[hidden] { display: none; }
+
+    .page-numbers {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-btn {
+      align-self: center;
+      min-width: 42px;
+      min-height: 40px;
+      padding: 8px 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      color: var(--text);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: .82rem;
+      cursor: pointer;
+    }
+
+    .page-btn:hover:not(:disabled) { border-color: var(--ai); color: var(--ai); }
+
+    .page-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    .page-btn.is-current {
+      border-color: var(--ai);
+      background: var(--ai);
+      color: #06231f;
+      font-weight: 600;
+    }
+
+    .page-ellipsis {
+      align-self: center;
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .82rem;
+      user-select: none;
+    }
+
+    /* ---------- ④ 卡片区下方三块 ---------- */
+    .blocks {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .block {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(13, 24, 32, .74);
+    }
+
+    .block-kicker {
+      margin: 0;
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .block h2 { margin: 0; font-size: 1.35rem; }
+
+    .block p { margin: 0; color: var(--muted); font-size: .94rem; }
+
+    .trio { display: grid; gap: 10px; margin: 2px 0 4px; }
+
+    .trio-item {
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+
+    .trio-item strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--text);
+      font-size: .92rem;
+    }
+
+    .trio-item span { color: var(--muted); font-size: .85rem; }
+
+    .block .btn { align-self: flex-start; margin-top: auto; }
+
+    .block--validator { border-color: color-mix(in srgb, var(--ai), transparent 62%); }
+    .block--validator .block-kicker { color: var(--ai); }
+    .validator-slogan { color: var(--text) !important; font-size: 1.15rem !important; font-weight: 600; }
+
+    /* ---------- ⑤ 页脚 ---------- */
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px 18px;
+      margin-top: 26px;
+      padding: 18px 4px 6px;
+      border-top: 1px solid var(--line);
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: .74rem;
+    }
+
+    .footer strong { color: var(--muted); }
+
+    @media (max-width: 1180px) {
+      .hero { grid-template-columns: 1fr; }
+      .dual-grid { grid-template-columns: 1fr; }
+      .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }  /* 上下堆叠时 2×2 成阵，不留空位 */
+      .blocks { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 820px) {
+      .shell { padding: 14px; }
+      .search-hook { position: static; }
+      .control-bar { grid-template-columns: 1fr 1fr; }
+      .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .control-bar, .card-grid { grid-template-columns: 1fr; }
+      .pane-head, .footer, .pane-foot { flex-direction: column; }
+      .ai-record dl { grid-template-columns: 1fr; }
+      .ai-record dt { padding-bottom: 1px; border-bottom: 0; }
+      .ai-record dd { padding-top: 1px; }
+      .hero-cta .btn { width: 100%; justify-content: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
 </head>
 <body>
+  <main class="shell">
 
-<div class="topbar">
-  <div class="wrap">
-    <span><b>XINKA</b>&nbsp; 可信知识记录标准 · Early Draft v0.2 · 更新 2026-10-07</span>
-    <span><a href="/tree.html">🌳 世界之树</a> <span class="sep">·</span> <a href="/whitepaper/">白皮书</a> <span class="sep">·</span> <a href="/validate.html">校验器</a> <span class="sep">·</span> <a href="https://github.com/renshiliao/xinka">GitHub</a></span>
-  </div>
-</div>
-
-<header id="top">
-  <div class="wrap">
-    <div class="kicker">可信知识的记录标准 · 开源</div>
-    <h1>信卡不是卡，<br>是一套记录标准。</h1>
-    <p class="lede">Xinka（信卡）规定<strong>一条结论要记什么、怎么核、何时作废</strong>：出处、采集时间、置信档、保鲜期、位置、核验记录，六个要素缺一不可。它写在 JSON schema 里，执行在校验器里——谁都可以免费查、免费用、免费验。</p>
-    <p class="en">Xinka: The Minimal Unit of Trustworthy Knowledge</p>
-    <div class="btns">
-      <a class="btn primary" href="/whitepaper/">阅读白皮书</a>
-      <a class="btn ghost" href="/validate.html">在线校验器</a>
-      <a class="btn ghost" href="#howto">三步上手</a>
-    </div>
-  </div>
-</header>
-
-<nav class="toc" aria-label="页内目录">
-  <div class="wrap">
-    <div class="toc-title">页内目录（点击直达本页段落）</div>
-    <ol>
-      <li><a href="#why">① 为什么需要</a></li>
-      <li><a href="#elements">② 信卡六要素</a></li>
-      <li><a href="#rules">③ 十条规则</a></li>
-      <li><a href="#users">④ 给谁用</a></li>
-      <li><a href="#format">⑤ 格式示例</a></li>
-      <li><a href="#howto">⑥ 怎么用</a></li>
-      <li><a href="#boundary">⑦ 边界声明</a></li>
-      <li><a href="#validate">⑧ 在线校验</a></li>
-    </ol>
-  </div>
-</nav>
-
-<main>
-
-<section id="why">
-  <div class="wrap">
-    <div class="secnum">§ 1 · 为什么需要</div>
-    <h2>AI 写得快，但引用不敢直接用</h2>
-    <p>用 AI 起草材料越来越常见，可材料里的数字和引用没人敢直接采信：<strong>出处没写清、口径没标年份、数据没核对</strong>。公文引用要经得起追问，数据核对要有据可查，台账要留痕备查——出了错，要能追到是哪一步、依据是什么、谁核的。</p>
-    <p>问题不在模型会不会说，而在结论<strong>无凭无据</strong>：不知道从哪个网页抄的、不知道哪天采的、不知道几个来源核过、不知道这条数据什么时候会过期。答案说得头头是道，却不敢信、不敢引、不敢用。</p>
-    <p>Xinka 给每条结论立一份规范档案——六个要素，机器可查；到日子没复核，置信档自动降下来，不会「一条数据用十年」。</p>
-  </div>
-</section>
-
-<section id="elements">
-  <div class="wrap">
-    <div class="secnum">§ 2 · 六要素</div>
-    <h2>信卡六要素</h2>
-    <p class="dim">一条结论 = 一句断言 + 以下六项记录。字段名即 JSON 键名，中英对照，机器与人读同一份。</p>
-    <div class="tblwrap">
-      <table>
-        <tr><th>要素</th><th>字段</th><th>记什么</th><th>怎么核</th></tr>
-        <tr><td>【源】</td><td><code>source_url</code></td><td>原始出处，可点可查可回溯</td><td>R7 出处格式 · R8 独立性 · R9 源分级</td></tr>
-        <tr><td>【采】</td><td><code>collected_at</code></td><td>采集时刻——同一页会变，不记时间不可复现</td><td>R2 时序合法</td></tr>
-        <tr><td>【信】</td><td><code>trust_level</code></td><td>两档置信：已验证 / 待核验</td><td>R3 两档制 · R4 三源互证</td></tr>
-        <tr><td>【鲜】</td><td><code>freshness_until</code></td><td>保鲜期——到期未复核自动降级</td><td>R5 到期降级</td></tr>
-        <tr><td>【位】</td><td><code>position</code></td><td>知识树坐标（如 <code>gov/docs/cite</code>），成体系不成孤岛</td><td>R7 坐标格式</td></tr>
-        <tr><td>【证】</td><td><code>verification</code></td><td>互证记录：方法、参与来源、校验时刻</td><td>R6 校验时序 · R10 引文绑定</td></tr>
-      </table>
-    </div>
-  </div>
-</section>
-
-<section id="rules">
-  <div class="wrap">
-    <div class="secnum">§ 3 · 规则</div>
-    <h2>十条规则，机器可查</h2>
-    <p>「已验证」不是一个说法，是一组机器可查的条件：六要素齐备、时间合法、三源互证、引文逐字绑定、正文指纹入档——<strong>编造的引用过不了关，改过的来源查得出指纹</strong>。</p>
-    <div class="rules">
-      <div class="rule"><span class="rid">R1</span><span class="rdesc">六要素必填齐备</span></div>
-      <div class="rule"><span class="rid">R2</span><span class="rdesc">时间合法，采集早于保鲜期</span></div>
-      <div class="rule"><span class="rid">R3</span><span class="rdesc">置信仅两档，宁低勿高</span></div>
-      <div class="rule"><span class="rid">R4</span><span class="rdesc">已验证须 ≥3 个<b>互不相同</b>的来源</span></div>
-      <div class="rule"><span class="rid">R5</span><span class="rdesc">保鲜到期自动降级</span></div>
-      <div class="rule"><span class="rid">R6</span><span class="rdesc">校验时序合法</span></div>
-      <div class="rule"><span class="rid">R7</span><span class="rdesc">出处与坐标格式合法</span></div>
-      <div class="rule"><span class="rid">R8</span><span class="rdesc">独立性：<b>三个来源同域名 = 转载互抄</b>，不算互证，拦下</span></div>
-      <div class="rule"><span class="rid">R9</span><span class="rdesc">源分级：已验证须含 ≥1 <b>一手来源</b></span></div>
-      <div class="rule"><span class="rid">R10</span><span class="rdesc">引文绑定：逐字引文 + <b>SHA-256 正文指纹</b></span></div>
-    </div>
-    <p class="dim" style="margin-top:16px;">复检随时可跑：重新抓取来源、比对指纹——源改稿现形，引文蒸发即降级。规则全文与参考实现在 <a class="inline" href="https://github.com/renshiliao/xinka">GitHub</a>，在线校验见 <a class="inline" href="/validate.html">validate.html</a>。</p>
-  </div>
-</section>
-
-<section id="users">
-  <div class="wrap">
-    <div class="secnum">§ 4 · 适用人群</div>
-    <h2>给谁用</h2>
-    <p class="dim">凡是要被引用、被决策、被追责的结论，都适用。纯文本规程，粘贴即用，无需安装。</p>
-
-    <div class="persona">
-      <div class="who"><div class="icon">💼</div><h3 class="name">文员 · 行政</h3></div>
-      <div class="body">
-        <div class="row"><span class="tag">痛点</span>写报告引用数据怕被问「哪来的」、公文口径对不上</div>
-        <div class="row"><span class="tag">用法</span>报告数据行脚注一行【源｜采｜信】；对外材料只放【已验证】数字；汇编台账按信卡格式留档，交接不丢账</div>
-        <div class="one">报告里的每个数字都带出处，领导问来源，一指即答。</div>
+    <!-- ① hero：题眼大标语 + 一句话副标语 -->
+    <header class="hero">
+      <div>
+        <p class="eyebrow"><span data-xinka-text="siteDomain">xinka.ai</span> / knowledge cards</p>
+        <h1>信卡：为降低AI幻觉而生的知识标准——准确真实的数据，带来更正确的判断。</h1>
+        <p class="lede">每张信卡强制携带来源、证据级与触发条件：AI 取到的每个字都能回溯到出处，幻觉难有落脚点。</p>
+        <div class="hero-cta">
+          <a class="btn btn--primary" data-xinka="validator" href="https://xinka.ai/">免费在线校验器</a>
+          <a class="btn" data-xinka="github" href="https://github.com/renshiliao/xinka">GitHub 开源包</a>
+          <a class="btn" href="xinka-opensource.html">GitHub 开源专题</a>
+          <a class="btn" href="standard.html">信卡标准</a>
+          <a class="btn" href="xinka-students.html">学者·信卡技能介绍</a>
+        </div>
       </div>
-    </div>
-    <div class="persona">
-      <div class="who"><div class="icon">⚖️</div><h3 class="name">律师 · 法务</h3></div>
-      <div class="body">
-        <div class="row"><span class="tag">痛点</span>法条引用须精确到条、司法解释更替频繁、尽调底稿要经得起复核</div>
-        <div class="row"><span class="tag">用法</span>法条引用带文号+施行日期+修订状态；尽调结论按信卡归档——谁、何时、依什么源下的判断，全程留痕</div>
-        <div class="one">可追溯的尽调底稿，本身就是专业价值。</div>
+      <aside class="hero-note" aria-label="信卡双渲染说明">
+        <strong>single source / two surfaces</strong>
+        <p>同一份信卡数据，两次渲染：人读一遍，AI 取一遍。检索、分类与证据筛选同时作用于两栏，左右一一对应。</p>
+      </aside>
+    </header>
+
+    <!-- ② 搜索栏：视觉钩子位（主标题后、卡片区前），三件套保留 -->
+    <!-- slogan 在吸顶层外：随页滚走（让位）；吸顶层只固定控制面板 -->
+    <p class="hook-slogan">
+      <strong>知识类信卡，免费搜、随便查——</strong>不用登录，不限次数。
+      <span class="free-tag">open search · for everyone</span>
+    </p>
+    <section class="search-hook" aria-label="信卡检索与筛选">
+      <div class="control-bar">
+        <div class="control">
+          <label for="search">Search / 检索名称、定义、解释、触发条件</label>
+          <input id="search" type="search" placeholder="例如：测量、风险、基准……" autocomplete="off">
+        </div>
+        <div class="control">
+          <label for="category">Category / 分类</label>
+          <select id="category"><option value="">全部分类</option></select>
+        </div>
+        <div class="control">
+          <label for="evidence">Evidence / 证据级</label>
+          <select id="evidence">
+            <option value="">全部证据级</option>
+            <option value="事实">事实</option>
+            <option value="判断">判断</option>
+          </select>
+        </div>
+        <button id="reset" type="button">清除筛选</button>
       </div>
-    </div>
-    <div class="persona">
-      <div class="who"><div class="icon">🎓</div><h3 class="name">学生</h3></div>
-      <div class="body">
-        <div class="row"><span class="tag">痛点</span>论文引用怕编造、网查资料分不清真假、答辩被问「出处呢」</div>
-        <div class="row"><span class="tag">用法</span>查资料时让 AI 按信卡格式输出——每条结论挂【源】【信】【鲜】；写论文只引【已验证·三源】条目，【待核验】的要么补齐要么删</div>
-        <div class="one">出处没写全的段落，就是风险点。</div>
-      </div>
-    </div>
-    <div class="persona">
-      <div class="who"><div class="icon">👨‍🏫</div><h3 class="name">教师 · 学者</h3></div>
-      <div class="body">
-        <div class="row"><span class="tag">痛点</span>课件数据年份混乱、案例来源不明、讲错了没人提醒</div>
-        <div class="row"><span class="tag">用法</span>课件每页数据标注来源与年份；学期末跑一次保鲜复核——去年的市占率今年可能就变了</div>
-        <div class="one">口径带年份，是学者对学生的最低负责。</div>
-      </div>
-    </div>
-    <div class="persona">
-      <div class="who"><div class="icon">🩺</div><h3 class="name">医生 · 医学生</h3></div>
-      <div class="body">
-        <div class="row"><span class="tag">痛点</span>指南更新快、剂量数据错不起、患者问「网上说」分不清源</div>
-        <div class="row"><span class="tag">用法</span>诊疗参考只用【已验证】条目，一手源为指南原文/药品说明书；患者科普材料每句带出处，宁标【待核验】不给确定答案</div>
-        <div class="one">在错不起的地方，孤证不立就是行医纪律。</div>
-      </div>
-    </div>
-    <div class="persona">
-      <div class="who"><div class="icon">📰</div><h3 class="name">媒体 · 编辑</h3></div>
-      <div class="body">
-        <div class="row"><span class="tag">痛点</span>抢时效怕翻车、转载改稿查不到原文、被指「假新闻」</div>
-        <div class="row"><span class="tag">用法</span>发稿前把关键断言按三源核对；存一份引文+抓取日期（指纹），事后改稿争议有据可查</div>
-        <div class="one">翻车时，指纹比记忆可靠。</div>
-      </div>
-    </div>
-    <div class="persona">
-      <div class="who"><div class="icon">📈</div><h3 class="name">金融 · 投资</h3></div>
-      <div class="body">
-        <div class="row"><span class="tag">痛点</span>财报口径杂、卖方报告二手三手、复盘找不到当时的依据</div>
-        <div class="row"><span class="tag">用法</span>研报数字只收一手源（交易所披露/年报）标【已验证】；传闻一律【待核验】不入决策；建自己的信卡库，复盘连当时的证据一起回看</div>
-        <div class="one">决策的依据和决策本身一样重要。</div>
-      </div>
-    </div>
-    <div class="persona">
-      <div class="who"><div class="icon">🏗️</div><h3 class="name">设计师 · 工程师</h3></div>
-      <div class="body">
-        <div class="row"><span class="tag">痛点</span>产品参数各说各话、标准条文会换版、给客户的报告要有据可依</div>
-        <div class="row"><span class="tag">用法</span>选型结论按信卡归档（参数等硬数字带源）；国标引用标标准号+年份+现行状态；对外报告挂信卡附录</div>
-        <div class="one">报告里的每个参数，都能翻出出处。</div>
-      </div>
-    </div>
-    <div class="persona">
-      <div class="who"><div class="icon">🤖</div><h3 class="name">AI 从业者</h3></div>
-      <div class="body">
-        <div class="row"><span class="tag">痛点</span>AI 输出没法验、幻觉无凭、接了大模型不敢用在正经场景</div>
-        <div class="row"><span class="tag">用法</span>让 AI 输出信卡 JSON（<a class="inline" href="#howto">提示词模板</a>见下方「怎么用」）；校验器把关 R1-R10；MCP 插座直连</div>
-        <div class="one">从「看着像对」到「可以查」，中间隔着一套记录规范。</div>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<section id="format">
-  <div class="wrap">
-    <div class="secnum">§ 5 · 格式示例</div>
-    <h2>同一条知识，两种呈现</h2>
-    <p>给机器的是一段 JSON，给人的是一张表——<strong>内容完全一致</strong>。机器能读、人能看懂，AI 才能照着作业、人才能逐条核对。</p>
+    <!-- ③ 双渲染区：左人类版 / 右AI版，同源数据两渲染，底部对齐 -->
+    <section class="dual-grid" aria-label="人类版与 AI 版并行信卡">
+<noscript><style>.ns-list{display:grid;gap:12px;padding:16px 0}.ns-card{border:1px solid rgba(148,163,184,.25);border-radius:10px;padding:14px 16px}.ns-card h3{margin:0 0 6px;font-size:15px;color:#e2e8f0}.ns-meta{font-weight:400;color:#94a3b8;font-size:12px;margin-left:8px}.ns-card p{margin:4px 0;font-size:13px;color:#cbd5e1;line-height:1.6}</style><div class="ns-list" aria-label="信卡清单（无脚本静态版）">
+<article class="ns-card"><h3>惯性<span class="ns-meta">XK-001 · 物理基础 · 证据级：事实</span></h3><p>物体不受外力作用时保持静止或匀速直线运动，这叫惯性。</p><p><b>触发：</b>解释车辆急停、物体突然滑动或运动状态变化时使用。</p></article>
+<article class="ns-card"><h3>物质的微观构成<span class="ns-meta">XK-002 · 化学与材料 · 证据级：事实</span></h3><p>物质由原子、分子或离子等微观粒子构成，宏观性质来自微观结构。</p><p><b>触发：</b>比较材料状态、硬度、导电性或化学性质差异时使用。</p></article>
+<article class="ns-card"><h3>均衡饮食<span class="ns-meta">XK-003 · 人体与健康 · 证据级：事实</span></h3><p>均衡饮食强调食物多样、规律进餐，并按需要控制总量。</p><p><b>触发：</b>规划日常餐食、讨论偏食或评估长期饮食结构时使用。</p></article>
+<article class="ns-card"><h3>昼夜与季节<span class="ns-meta">XK-004 · 自然与地理 · 证据级：事实</span></h3><p>地球自转带来昼夜交替，公转与地轴倾斜共同影响季节变化。</p><p><b>触发：</b>解释昼夜周期、季节差异或太阳高度变化时使用。</p></article>
+<article class="ns-card"><h3>天气与气候的时间尺度<span class="ns-meta">XK-005 · 天气与气候 · 证据级：事实</span></h3><p>天气是短时间的大气状态，气候是一地长期天气规律的概括。</p><p><b>触发：</b>区分短期预报、季节规律与长期气候变化时使用。</p></article>
+<article class="ns-card"><h3>百分比与百分点<span class="ns-meta">XK-006 · 数学与统计 · 证据级：事实</span></h3><p>百分数表达比例，增加百分比和增加多少“个百分点”不是一回事。</p><p><b>触发：</b>阅读增长率、比例变化或比较两个百分比时使用。</p></article>
+<article class="ns-card"><h3>维修前隔离能量<span class="ns-meta">XK-007 · 生活与工程 · 证据级：判断</span></h3><p>修东西前先断开能源、热源或水源，并确认不会突然启动。</p><p><b>触发：</b>接触家电、工具、管路或任何可能突然启动的设备前使用。</p></article>
+<article class="ns-card"><h3>制动距离<span class="ns-meta">XK-008 · 交通与机械 · 证据级：事实</span></h3><p>车辆制动需要反应距离和刹车距离，速度越高通常越难短停。</p><p><b>触发：</b>判断跟车距离、雨雪风险或速度变化对停车的影响时使用。</p></article>
+<article class="ns-card"><h3>湿手与电气安全<span class="ns-meta">XK-009 · 用电与用火安全 · 证据级：判断</span></h3><p>湿手不触碰插座、开关和电器，发现进水先断电并由合格人员处理。</p><p><b>触发：</b>手湿、地面有水或电器进水时，停止操作并隔离电源。</p></article>
+<article class="ns-card"><h3>具体表达需求<span class="ns-meta">XK-010 · 人情与社会 · 证据级：判断</span></h3><p>表达需求要具体说明行为、影响和期望，避免只给人贴标签。</p><p><b>触发：</b>发生摩擦、提出请求或反馈他人行为时使用。</p></article>
+<article class="ns-card"><h3>情绪反应<span class="ns-meta">XK-011 · 情绪常识 · 证据级：事实</span></h3><p>情绪是身心对事件的反应，会伴随感受、想法、身体变化和行动冲动。</p><p><b>触发：</b>情绪突然升高、身体明显变化或行动冲动出现时使用。</p></article>
+<article class="ns-card"><h3>词义依赖语境<span class="ns-meta">XK-012 · 语言与文字 · 证据级：事实</span></h3><p>语言是约定俗成的符号系统，词语意义会随语境、时代和群体变化。</p><p><b>触发：</b>遇到多义词、旧词新义或跨群体表达时使用。</p></article>
+<article class="ns-card"><h3>史料与证据限度<span class="ns-meta">XK-013 · 历史与文明 · 证据级：事实</span></h3><p>历史研究依据文献、实物、口述和考古等材料重建过去，但史料也有立场和残缺。</p><p><b>触发：</b>评估历史说法、史料可信度或结论确定性时使用。</p></article>
+<article class="ns-card"><h3>稀缺与机会成本<span class="ns-meta">XK-014 · 经济常识 · 证据级：事实</span></h3><p>稀缺意味着资源和时间有限，选择一种用途通常意味着放弃其他可能。</p><p><b>触发：</b>比较方案、分配预算或讨论“这样做还有什么代价”时使用。</p></article>
+<article class="ns-card"><h3>测量的定义<span class="ns-meta">XK-015 · 测量与实验常识 · 证据级：事实</span></h3><p>测量是把对象与明确量纲、单位和方法联系起来的定量或分级过程。</p><p><b>触发：</b>把模糊评价转成可复核指标，或说明测量单位和方法时使用。</p></article>
+<article class="ns-card"><h3>现场信息优先<span class="ns-meta">XK-016 · 其他日常常识 · 证据级：判断</span></h3><p>地址、路线和地图工具可能过时，紧急情况下以现场标志、工作人员指引和实时信息为准。</p><p><b>触发：</b>地图与现场标志冲突、路线临时变化或处于紧急情况时使用。</p></article>
+<article class="ns-card"><h3>规律而适量的进餐<span class="ns-meta">XK-017 · 人体与健康 · 证据级：判断</span></h3><p>一日三餐可按作息安排，但重要的是规律、适量和可持续。</p><p><b>触发：</b>设计个人餐次、调整作息或讨论是否必须一日三餐时使用。</p></article>
+<article class="ns-card"><h3>过街确认实际通行状态<span class="ns-meta">XK-018 · 交通与机械 · 证据级：判断</span></h3><p>步行过街要先观察车辆，再确认安全，不把“绿灯”当成绝对安全。</p><p><b>触发：</b>路口绿灯亮起但仍存在转弯车、遮挡或盲区时使用。</p></article>
+<article class="ns-card"><h3>愤怒与恐惧天平<span class="ns-meta">XK-019 · 情绪常识 · 证据级：判断</span></h3><p>天平对“愤怒↔恐惧”常从同一个威胁出发：愤怒更偏向向前抗争，恐惧更偏向避险。</p><p><b>触发：</b>面对攻击、回避或强烈防御反应，需要识别背后威胁时使用。</p></article>
+<article class="ns-card"><h3>激动与冷落天平<span class="ns-meta">XK-020 · 情绪常识 · 证据级：判断</span></h3><p>天平对“激动↔冷落”不是简单的“好坏”，而是情绪表达强度与接收温度不匹配。</p><p><b>触发：</b>一方持续加压、另一方退缩沉默，且双方开始互相误读时使用。</p></article>
+<article class="ns-card"><h3>基准三步序<span class="ns-meta">XK-021 · 测量与实验常识 · 证据级：事实</span></h3><p>基准三步序是“校准→固化→连续用”：先校准，再固化条件，再连续使用同一有效基准。</p><p><b>触发：</b>建立比较基准、持续监测对象或跨时间复测时使用。</p></article>
+<article class="ns-card"><h3>标本定死法<span class="ns-meta">XK-022 · 测量与实验常识 · 证据级：判断</span></h3><p>“标本定死法”是在观察前锁定对象范围、取样规则、时间点和排除条件，过程不临时换标本。</p><p><b>触发：</b>开始观察、抽样或实验前，需要固定对象与纳入排除规则时使用。</p></article>
+<article class="ns-card"><h3>多次测量取均值定标<span class="ns-meta">XK-023 · 测量与实验常识 · 证据级：判断</span></h3><p>“多次测量取均值定标”用于稳定对象时减少随机波动，先按规则识别无效测量，再用多次结果建立基准。</p><p><b>触发：</b>对象稳定但单次读数波动，需要建立可复用基准时使用。</p></article>
+<article class="ns-card"><h3>结果确认三问<span class="ns-meta">XK-024 · 测量与实验常识 · 证据级：判断</span></h3><p>“结果确认三问”是：测的是不是要测的？基准和过程是否有效？结果能否支持结论？</p><p><b>触发：</b>发布、引用或据此决策任何测量结果前使用。</p></article>
+</div></noscript>
 
-    <div class="card-label">机器可读 · JSON（xinka v0.2 片段）</div>
-<pre><code>{
-  "xinka_version": "0.2",
-  "claim": "在标准大气压下，纯水的沸点约为 100 °C；海拔升高气压降低，沸点随之下降。",
-  "source_url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Type=TBOIL",
-  "collected_at": "2026-10-01T10:30:00+08:00",
-  "trust_level": "verified",
-  "freshness_until": "2028-10-01T00:00:00+08:00",
-  "position": "science/chemistry/boiling-point",
-  "verification": {
-    "method": "three-source cross-check",
-    "sources": [
-      "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Type=TBOIL",
-      "https://britannica.com/science/boiling-point",
-      "https://en.wikipedia.org/wiki/Boiling_point"
-    ],
-    "checked_at": "2026-10-01T12:30:00+08:00"
-  }
-}</code></pre>
+      <section class="pane pane--human" aria-labelledby="human-title">
+        <header class="pane-head">
+          <div>
+            <p class="pane-kicker">surface / human-readable</p>
+            <h2 id="human-title">人类版 · 阅读面</h2>
+            <p class="pane-summary">卡片墙、短段落、证据提示与生活触发条件；先读，再用。</p>
+          </div>
+          <div class="count-badge" id="human-count" aria-live="polite">24 条</div>
+        </header>
+        <div class="pane-body">
+          <div class="card-grid" id="human-card-list"></div>
+          <div class="empty-state" id="human-empty">没有符合当前筛选的信卡。</div>
+        </div>
+        <footer class="pane-foot">
+          <span><strong>CARDS</strong> 知识类样例卡 · 与右栏一一对应</span>
+          <span>render=human</span>
+        </footer>
+      </section>
+      <section class="pane pane--ai" aria-labelledby="ai-title">
+        <header class="pane-head">
+          <div>
+            <p class="pane-kicker">surface / machine-readable</p>
+            <h2 id="ai-title">AI 版 · 提取面</h2>
+            <p class="pane-summary">固定键值、稳定 ID、来源定位与 JSON-LD；先取，再推理。</p>
+          </div>
+          <div class="count-badge" id="ai-count" aria-live="polite">24 records</div>
+        </header>
+        <div class="ai-toolbar">
+          <span class="traffic" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>schema=dataset · lang=zh-CN · render=ai</span>
+        </div>
+        <div class="pane-body">
+          <div class="ai-stream" id="ai-record-list"></div>
+          <div class="empty-state" id="ai-empty">records: 0 · filters returned no match</div>
+        </div>
+        <footer class="pane-foot">
+          <span><strong>RECORDS</strong> 固定字段 · 来源可回溯</span>
+          <span>json-ld · LearningResource</span>
+        </footer>
+      </section>
+    </section>
 
-    <div class="card-label">人可读 · 六要素表（同一条知识）</div>
-    <div class="tblwrap">
-      <table>
-        <tr><th>要素</th><th>内容</th></tr>
-        <tr><td>结论</td><td>标准大气压下纯水沸点约 100 °C，海拔升高沸点下降</td></tr>
-        <tr><td>【源】</td><td>webbook.nist.gov（美国国家标准与技术研究院）等 3 个独立来源</td></tr>
-        <tr><td>【采】</td><td>2026-10-01 10:30（东八区）</td></tr>
-        <tr><td>【信】</td><td>已验证（三源互证，域名互不相同）</td></tr>
-        <tr><td>【鲜】</td><td>保鲜至 2028-10-01，到期未复核自动降为待核验</td></tr>
-        <tr><td>【位】</td><td>science/chemistry/boiling-point</td></tr>
-        <tr><td>【证】</td><td>三源交叉核对，校验于 2026-10-01 12:30</td></tr>
-      </table>
-    </div>
-    <p class="dim">完整字段与约束见 <a class="inline" href="https://github.com/renshiliao/xinka/blob/main/schema/xinka-0.2.schema.json">schema xinka-0.2</a>，可直接贴进下方校验器试跑。</p>
-  </div>
-</section>
+    <!-- ③b 翻页：每页 3 张（定案），点页码跳页 / 上一页 / 下一页，左右两栏同步 -->
+    <nav class="pagination" id="pagination" aria-label="信卡分页" hidden>
+      <button class="page-btn" id="page-prev" type="button">上一页</button>
+      <div class="page-numbers" id="page-numbers"></div>
+      <button class="page-btn" id="page-next" type="button">下一页</button>
+    </nav>
 
-<section id="howto">
-  <div class="wrap">
-    <div class="secnum">§ 6 · 怎么用</div>
-    <h2>三步上手</h2>
-    <div class="steps">
-      <div class="step"><div class="st"><b>起步</b>：把下面的提示词模板贴给 AI（豆包/千问/DeepSeek/Claude 通用），派活时加一句「按信卡标准输出」。</div></div>
-      <div class="step"><div class="st"><b>把关</b>：结论交校验器（<a class="inline" href="/validate.html">validate.html</a> 或本地命令 <code>python3 tools/xinka_check.py 卡.json</code>）——孤证、编造、过期自动拦。</div></div>
-      <div class="step"><div class="st"><b>积累</b>：过卡结论入自己的库（文档、表格都行），到期条目按时复核——用得越久，档案越扎实。</div></div>
-    </div>
+    <!-- ④ 介绍 / 校验器 / GitHub 三块 -->
+    <section class="blocks" aria-label="信卡介绍、校验器与开源包">
+      <article class="block">
+        <p class="block-kicker">what is xinka</p>
+        <h2>信卡是什么</h2>
+        <p>三句话讲清：一套为反幻觉而生的数据标准。</p>
+        <div class="trio">
+          <div class="trio-item"><strong>强制来源</strong><span>每张卡必须写明出处定位，结论始终拖着它的证据走。</span></div>
+          <div class="trio-item"><strong>证据级</strong><span>「事实」与「判断」分档标注，多确定就是多确定，不含糊。</span></div>
+          <div class="trio-item"><strong>触发条件</strong><span>写清什么场景该用这张卡，AI 就不容易拿错知识答错题。</span></div>
+        </div>
+        <p>三个硬字段合起来 = 反幻觉数据标准：准确真实的数据，带来更正确的判断。人读一遍、AI 取一遍，同一份数据两种渲染。首页只放知识类信卡，开放检索，所有人都能免费用。</p>
+      </article>
+      <article class="block block--validator">
+        <p class="block-kicker">validator · free</p>
+        <h2>在线校验器</h2>
+        <p class="validator-slogan">丢进来，验真假。</p>
+        <p><span data-xinka-text="siteDomain">xinka.ai</span> 提供免费信卡校验器：粘贴信卡内容，立刻检查字段完整性、来源定位与格式合规——不合格的卡，出不了门。</p>
+        <a class="btn btn--primary" data-xinka="validator" href="https://xinka.ai/">打开校验器</a>
+      </article>
+      <article class="block">
+        <p class="block-kicker">open source</p>
+        <h2>开源包</h2>
+        <p>信卡标准与工具链开源共建，规范、样例与接入文档全公开。</p>
+        <div class="trio">
+          <div class="trio-item"><strong>MCP 服务</strong><span>让 AI 助手直接取用与校验信卡。</span></div>
+          <div class="trio-item"><strong>样例卡</strong><span>本页 <span data-card-total>24</span> 张知识类信卡的完整数据包。</span></div>
+          <div class="trio-item"><strong>文档</strong><span>标准说明与写卡指南，照着写就能过校验。</span></div>
+        </div>
+        <a class="btn" data-xinka="github" href="https://github.com/renshiliao/xinka">前往 GitHub</a>
+      </article>
+    </section>
 
-    <div class="card-label">提示词模板 · 一键复制发给任何 AI</div>
-    <button class="copybtn" type="button" onclick="copyText('promptBox', this)">复制提示词模板</button>
-    <pre id="promptBox"><code>你是「持证资料员」，在 Xinka（信卡）标准下作业。可信知识的最小单元=信卡，六要素：源/采/信/鲜/位/证。
+    <!-- ⑤ 页脚 -->
+    <footer class="footer">
+      <span><strong>SITE</strong> <span data-xinka-text="siteDomain">xinka.ai</span> · 信卡 Xinka 可信知识记录标准</span>
+      <span><strong>LICENSE</strong> <span data-xinka-text="license">Apache-2.0</span>（占位字样，以仓库 LICENSE 为准）</span>
+      <span><strong>DATA</strong> 知识类样例卡 <span data-card-total>24</span> 条 · 同源双渲染</span>
+      <span><strong>BUILD</strong> <span data-xinka-text="buildTime">2026-11-01T01:47:36+08:00</span></span>
+    </footer>
+  </main>
 
-【作业铁律】
-1. 无源不言：凡数字、日期、口径、承诺类断言，必须给真实出处 URL；查不到写「待查」，绝不编造 URL。
-2. 孤证不立：单源断言只标 pending（待核验）；升 verified（已验证）须 ≥3 个独立来源互证（同一篇文章的转载不算独立）。
-3. 时效入账：每条断言标采集日期；时效性强的（市占率/价格/榜单）保鲜 1 年，机制性事实可 3-5 年。
-4. 口径带年份：「连续 N 年第一」类断言必须写明口径来源与截止年份。
-5. 档位诚实：证据不够就降档并说明缺什么。宁可标低，不可标高。
+  <!-- 链接由页首 XINKA_CONFIG 统一注入，改配置一处即可 -->
+  <script id="card-data" type="application/json">
+  [
+    {
+      "id": "XK-001",
+      "category": "物理基础",
+      "name": "惯性",
+      "definition": "物体不受外力作用时保持静止或匀速直线运动，这叫惯性。",
+      "rationale": "运动状态改变需要力，惯性只说明物体抗拒运动状态突然改变，不是一种额外的“力”。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "解释车辆急停、物体突然滑动或运动状态变化时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 一、物理基础 · 1"
+    },
+    {
+      "id": "XK-002",
+      "category": "化学与材料",
+      "name": "物质的微观构成",
+      "definition": "物质由原子、分子或离子等微观粒子构成，宏观性质来自微观结构。",
+      "rationale": "粒子种类、排列和相互作用不同，会形成气体、液体、固体及不同化学性质。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "比较材料状态、硬度、导电性或化学性质差异时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 二、化学与材料 · 1"
+    },
+    {
+      "id": "XK-003",
+      "category": "人体与健康",
+      "name": "均衡饮食",
+      "definition": "均衡饮食强调食物多样、规律进餐，并按需要控制总量。",
+      "rationale": "人体需要能量和多种营养素，单一食物很难长期满足全部需要，过量同样会造成负担。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "规划日常餐食、讨论偏食或评估长期饮食结构时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 三、人体与健康 · 1"
+    },
+    {
+      "id": "XK-004",
+      "category": "自然与地理",
+      "name": "昼夜与季节",
+      "definition": "地球自转带来昼夜交替，公转与地轴倾斜共同影响季节变化。",
+      "rationale": "昼夜主要由地球自转造成，季节还与太阳高度、日照时长和地轴倾角有关。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "解释昼夜周期、季节差异或太阳高度变化时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 四、自然与地理 · 1"
+    },
+    {
+      "id": "XK-005",
+      "category": "天气与气候",
+      "name": "天气与气候的时间尺度",
+      "definition": "天气是短时间的大气状态，气候是一地长期天气规律的概括。",
+      "rationale": "“今天下雨”描述天气，“雨季来得早晚”描述气候统计规律，两者时间尺度不同。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "区分短期预报、季节规律与长期气候变化时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 五、天气与气候 · 1"
+    },
+    {
+      "id": "XK-006",
+      "category": "数学与统计",
+      "name": "百分比与百分点",
+      "definition": "百分数表达比例，增加百分比和增加多少“个百分点”不是一回事。",
+      "rationale": "百分数的基数会变化，百分点只直接比较百分比之间的差额。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "阅读增长率、比例变化或比较两个百分比时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 六、数学与统计 · 1"
+    },
+    {
+      "id": "XK-007",
+      "category": "生活与工程",
+      "name": "维修前隔离能量",
+      "definition": "修东西前先断开能源、热源或水源，并确认不会突然启动。",
+      "rationale": "许多事故发生在“以为已经关闭”时，隔离能量后再操作能显著降低伤害风险。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "接触家电、工具、管路或任何可能突然启动的设备前使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 七、生活与工程 · 1"
+    },
+    {
+      "id": "XK-008",
+      "category": "交通与机械",
+      "name": "制动距离",
+      "definition": "车辆制动需要反应距离和刹车距离，速度越高通常越难短停。",
+      "rationale": "司机看到危险到开始制动要时间，车辆减速还受车重、轮胎、路面和制动状态影响。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "判断跟车距离、雨雪风险或速度变化对停车的影响时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 八、交通与机械 · 1"
+    },
+    {
+      "id": "XK-009",
+      "category": "用电与用火安全",
+      "name": "湿手与电气安全",
+      "definition": "湿手不触碰插座、开关和电器，发现进水先断电并由合格人员处理。",
+      "rationale": "水和湿污会降低绝缘效果，增加漏电和触电风险。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "手湿、地面有水或电器进水时，停止操作并隔离电源。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 九、用电与用火安全 · 1"
+    },
+    {
+      "id": "XK-010",
+      "category": "人情与社会",
+      "name": "具体表达需求",
+      "definition": "表达需求要具体说明行为、影响和期望，避免只给人贴标签。",
+      "rationale": "具体表达减少猜测和防御，也让对方知道哪些行动真正有用。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "发生摩擦、提出请求或反馈他人行为时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十、人情与社会 · 1"
+    },
+    {
+      "id": "XK-011",
+      "category": "情绪常识",
+      "name": "情绪反应",
+      "definition": "情绪是身心对事件的反应，会伴随感受、想法、身体变化和行动冲动。",
+      "rationale": "大脑、激素和环境共同参与情绪反应，因此需要同时觉察身体信号和解释方式。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "情绪突然升高、身体明显变化或行动冲动出现时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十一、情绪常识 · 1"
+    },
+    {
+      "id": "XK-012",
+      "category": "语言与文字",
+      "name": "词义依赖语境",
+      "definition": "语言是约定俗成的符号系统，词语意义会随语境、时代和群体变化。",
+      "rationale": "同一个词在不同场合可能有不同含义，理解交流要结合上下文而不只查字面。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "遇到多义词、旧词新义或跨群体表达时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十二、语言与文字 · 1"
+    },
+    {
+      "id": "XK-013",
+      "category": "历史与文明",
+      "name": "史料与证据限度",
+      "definition": "历史研究依据文献、实物、口述和考古等材料重建过去，但史料也有立场和残缺。",
+      "rationale": "留存下来的材料受选择和破坏影响，史学结论需比较来源并说明证据限度。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "评估历史说法、史料可信度或结论确定性时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十三、历史与文明 · 1"
+    },
+    {
+      "id": "XK-014",
+      "category": "经济常识",
+      "name": "稀缺与机会成本",
+      "definition": "稀缺意味着资源和时间有限，选择一种用途通常意味着放弃其他可能。",
+      "rationale": "选择的真实代价不只看花掉的钱，还包括被放弃机会的价值，即机会成本。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "比较方案、分配预算或讨论“这样做还有什么代价”时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十四、经济常识 · 1"
+    },
+    {
+      "id": "XK-015",
+      "category": "测量与实验常识",
+      "name": "测量的定义",
+      "definition": "测量是把对象与明确量纲、单位和方法联系起来的定量或分级过程。",
+      "rationale": "只说“大、快、重”无法稳定比较，明确测什么、怎么测和用什么单位才可复核。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "把模糊评价转成可复核指标，或说明测量单位和方法时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十五、测量与实验常识 · 1"
+    },
+    {
+      "id": "XK-016",
+      "category": "其他日常常识",
+      "name": "现场信息优先",
+      "definition": "地址、路线和地图工具可能过时，紧急情况下以现场标志、工作人员指引和实时信息为准。",
+      "rationale": "道路施工、封闭和临时管制变化快，电子地图也可能存在定位或数据延迟。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "地图与现场标志冲突、路线临时变化或处于紧急情况时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十六、其他日常常识 · 1"
+    },
+    {
+      "id": "XK-017",
+      "category": "人体与健康",
+      "name": "规律而适量的进餐",
+      "definition": "一日三餐可按作息安排，但重要的是规律、适量和可持续。",
+      "rationale": "固定进餐节律有助于控制饥饿和饮食行为，具体餐次还应结合年龄、疾病和活动量。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "设计个人餐次、调整作息或讨论是否必须一日三餐时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 三、人体与健康 · 2"
+    },
+    {
+      "id": "XK-018",
+      "category": "交通与机械",
+      "name": "过街确认实际通行状态",
+      "definition": "步行过街要先观察车辆，再确认安全，不把“绿灯”当成绝对安全。",
+      "rationale": "右转车辆、闯灯车辆、遮挡和盲区仍可能造成冲突，最终要以实际通行状态为准。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "路口绿灯亮起但仍存在转弯车、遮挡或盲区时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 八、交通与机械 · 2"
+    },
+    {
+      "id": "XK-019",
+      "category": "情绪常识",
+      "name": "愤怒与恐惧天平",
+      "definition": "天平对“愤怒↔恐惧”常从同一个威胁出发：愤怒更偏向向前抗争，恐惧更偏向避险。",
+      "rationale": "两者都在准备应对危险，动作方向可能相反，但只看外在行为容易误判真实需要。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "面对攻击、回避或强烈防御反应，需要识别背后威胁时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十一、情绪常识 · 2"
+    },
+    {
+      "id": "XK-020",
+      "category": "情绪常识",
+      "name": "激动与冷落天平",
+      "definition": "天平对“激动↔冷落”不是简单的“好坏”，而是情绪表达强度与接收温度不匹配。",
+      "rationale": "一方越讲越急、一方越退越冷时，双方都可能把对方的防御误读成不在意。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "一方持续加压、另一方退缩沉默，且双方开始互相误读时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十一、情绪常识 · 5"
+    },
+    {
+      "id": "XK-021",
+      "category": "测量与实验常识",
+      "name": "基准三步序",
+      "definition": "基准三步序是“校准→固化→连续用”：先校准，再固化条件，再连续使用同一有效基准。",
+      "rationale": "中途更换仪器、方法或判据会把基准变化混入真实变化，连续性才能支撑前后对比。",
+      "evidenceLevel": "事实",
+      "triggerCondition": "建立比较基准、持续监测对象或跨时间复测时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十五、测量与实验常识 · 2"
+    },
+    {
+      "id": "XK-022",
+      "category": "测量与实验常识",
+      "name": "标本定死法",
+      "definition": "“标本定死法”是在观察前锁定对象范围、取样规则、时间点和排除条件，过程不临时换标本。",
+      "rationale": "临时挑容易看、结果好看的样本会产生选择性偏差，预先定案才能让结果可信。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "开始观察、抽样或实验前，需要固定对象与纳入排除规则时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十五、测量与实验常识 · 3"
+    },
+    {
+      "id": "XK-023",
+      "category": "测量与实验常识",
+      "name": "多次测量取均值定标",
+      "definition": "“多次测量取均值定标”用于稳定对象时减少随机波动，先按规则识别无效测量，再用多次结果建立基准。",
+      "rationale": "单次读数可能受偶然扰动，取均值能降低随机误差，但不能修复系统偏差或样本选错。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "对象稳定但单次读数波动，需要建立可复用基准时使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十五、测量与实验常识 · 4"
+    },
+    {
+      "id": "XK-024",
+      "category": "测量与实验常识",
+      "name": "结果确认三问",
+      "definition": "“结果确认三问”是：测的是不是要测的？基准和过程是否有效？结果能否支持结论？",
+      "rationale": "三问分别防止对象错位、方法失效和结论越界，是发布结果前的最后一道闸。",
+      "evidenceLevel": "判断",
+      "triggerCondition": "发布、引用或据此决策任何测量结果前使用。",
+      "triggerBasis": "derived-interpretation",
+      "sourceLocator": "基础认知底稿 v2 · 十五、测量与实验常识 · 5"
+    }
+  ]
+  </script>
+  <script>
+    (() => {
+      "use strict";
 
-【输出格式】每条断言一张卡：
-{"xinka_version":"0.2","claim":"断言句","source_url":"主源","collected_at":"RFC3339","trust_level":"verified|pending","freshness_until":"RFC3339","position":"树内坐标/小写分层","verification":{"method":"three-source cross-check","sources":["源1","源2","源3"],"checked_at":"RFC3339或null"}}
+      /* ---- 占位链接/字样统一注入：数据源为页首 window.XINKA_CONFIG ---- */
+      const cfg = window.XINKA_CONFIG || {};
+      const linkMap = {
+        validator: cfg.validatorUrl,
+        github: cfg.githubUrl,
+        "github-mcp": cfg.githubUrl ? cfg.githubUrl.replace(/\/$/, "") + "/mcp" : undefined,
+        "github-samples": cfg.githubUrl ? cfg.githubUrl.replace(/\/$/, "") + "/samples" : undefined,
+        "github-docs": cfg.githubUrl ? cfg.githubUrl.replace(/\/$/, "") + "/docs" : undefined
+      };
+      document.querySelectorAll("[data-xinka]").forEach((node) => {
+        const url = linkMap[node.getAttribute("data-xinka")];
+        if (url) node.setAttribute("href", url);
+      });
+      document.querySelectorAll("[data-xinka-text]").forEach((node) => {
+        const value = cfg[node.getAttribute("data-xinka-text")];
+        if (value) node.textContent = value;
+      });
 
-【自检】交卷前过一遍：每条有真源？verified 三源是不同域名？时间字段合法？数字类至少一个官方/一手源？
-【边界】「今天周几」之类无风险的话不需要信卡；信卡用在错不起的断言上。</code></pre>
-    <p class="dim">模板原文可下载：<a class="inline" href="/prompts/XINKA_AGENT_PROMPT.md">XINKA_AGENT_PROMPT.md</a>；命令行、MCP 插座等接入方式见 <a class="inline" href="https://github.com/renshiliao/xinka">GitHub 规范仓库</a>。</p>
-  </div>
-</section>
+      /* ---- 样例卡数据（知识类）与双渲染 ---- */
+      const dataNode = document.getElementById("card-data");
+      const cards = JSON.parse(dataNode.textContent);
+      const humanList = document.getElementById("human-card-list");
+      const aiList = document.getElementById("ai-record-list");
+      const categorySelect = document.getElementById("category");
+      const evidenceSelect = document.getElementById("evidence");
+      const searchInput = document.getElementById("search");
+      const resetButton = document.getElementById("reset");
+      const humanCount = document.getElementById("human-count");
+      const aiCount = document.getElementById("ai-count");
+      const humanEmpty = document.getElementById("human-empty");
+      const aiEmpty = document.getElementById("ai-empty");
+      const pagination = document.getElementById("pagination");
+      const pageNumbers = document.getElementById("page-numbers");
+      const pagePrev = document.getElementById("page-prev");
+      const pageNext = document.getElementById("page-next");
 
-<section id="boundary">
-  <div class="wrap">
-    <div class="secnum">§ 7 · 边界</div>
-    <h2>这个标准不做什么</h2>
-    <p class="dim">一个方法、一份标准，就该把边界说在前面。</p>
-    <div class="isnot">
-      <div class="is">
-        <h3>XINKA 是</h3>
-        <ul>
-          <li>一套开源<strong>记录规范</strong>（JSON schema，v0.2）</li>
-          <li>一套免费<strong>校验器</strong>（十条规则，机器可查）</li>
-          <li>一种<strong>置信度口径</strong>（两档起步，宁低勿高）</li>
-          <li>一份可被任何 AI、任何系统<strong>复用的规程</strong></li>
-        </ul>
-      </div>
-      <div class="no">
-        <h3>XINKA 不是</h3>
-        <ul>
-          <li>不承诺「永远正确」——三源同错也会照实记录；承诺的是<strong>错了查得清、追得回</strong></li>
-          <li>不是核查机构——标准与工具全部公开，谁都能复核</li>
-          <li>不采集您的数据——校验在本地或浏览器内完成，复制带走即归您</li>
-        </ul>
-      </div>
-    </div>
-    <blockquote>它的承诺是更弱也更诚实的一种：<strong>错了，查得清，追得回。</strong></blockquote>
-  </div>
-</section>
+      /* ---- 每页卡数（2026-11-03 定 改令：每侧 4 张，左右两栏逐行一一对齐），左右两栏同源同步翻页 ---- */
+      const PAGE_SIZE = 4;
+      const dualGrid = document.querySelector(".dual-grid");
+      let currentPage = 1;
+      let matchedCards = [];
 
-<section id="validate" class="cta">
-  <div class="wrap">
-    <div class="secnum">§ 8 · 在线校验</div>
-    <h2>贴一段信卡，当场验</h2>
-    <p class="dim">校验在浏览器内完成，不上传、不留存。六要素缺一、时间没时区、引文编造、指纹缺失，当场拦下。</p>
-    <div class="btns">
-      <a class="btn primary" href="/validate.html">在线校验 →</a>
-      <a class="btn ghost" href="/whitepaper/">📖 白皮书</a>
-      <a class="btn ghost" href="/guestbook.html">💬 留言板</a>
-      <a class="btn ghost" href="https://github.com/renshiliao/xinka">⭐ GitHub</a>
-    </div>
-  </div>
-</section>
+      const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
 
-</main>
+      const evidenceClass = (level) => level === "事实" ? "tag--fact" : "tag--judgment";
 
-<footer>
-  © 2026 Xinka Standard · 信卡 · Created by <strong>Ren Shiliao（任世燎）</strong> · <a href="https://xinka.ai">xinka.ai</a><br>
-  <span class="sign">
-    <a href="/whitepaper/">白皮书</a> · <a href="/validate.html">在线校验器</a> · <a href="/guestbook.html">留言板</a> · <a href="https://github.com/renshiliao/xinka">GitHub</a> · <a href="mailto:hi@xinka.ai">hi@xinka.ai</a>
-  </span><br>
-  本页为纯静态页面，不采集任何数据——复制带走即归您，我们不留存任何副本。
-</footer>
+      function renderHumanCard(card, index) {
+        return `
+          <article class="human-card" id="human-card-${escapeHTML(card.id)}"
+            itemscope itemtype="https://schema.org/LearningResource"
+            data-card-id="${escapeHTML(card.id)}"
+            data-category="${escapeHTML(card.category)}"
+            data-evidence="${escapeHTML(card.evidenceLevel)}"
+            data-trigger-basis="${escapeHTML(card.triggerBasis)}">
+            <div class="card-topline">
+              <span class="card-index">${String(index + 1).padStart(2, "0")} / ${escapeHTML(card.id)}</span>
+              <span class="tag tag--category">${escapeHTML(card.category)}</span>
+            </div>
+            <h3 itemprop="name">${escapeHTML(card.name)}</h3>
+            <div>
+              <span class="field-label">是什么 / definition</span>
+              <p itemprop="description">${escapeHTML(card.definition)}</p>
+            </div>
+            <div>
+              <span class="field-label">为什么 / rationale</span>
+              <p class="why">${escapeHTML(card.rationale)}</p>
+            </div>
+            <p class="trigger">
+              <span class="field-label">触发条件 / trigger</span>
+              ${escapeHTML(card.triggerCondition)}
+              <span class="tag ${evidenceClass(card.evidenceLevel)}">${escapeHTML(card.evidenceLevel)}</span>
+            </p>
+            <div class="source-line">
+              <span>${escapeHTML(card.sourceLocator)}</span>
+              <span>trigger=${escapeHTML(card.triggerBasis)}</span>
+            </div>
+          </article>`;
+      }
 
-<script>
-function copyText(id, btn) {
-  var text = document.getElementById(id).textContent;
-  function done() {
-    var old = btn.textContent;
-    btn.textContent = '已复制';
-    setTimeout(function () { btn.textContent = old; }, 1500);
-  }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(done, fallback);
-  } else { fallback(); }
-  function fallback() {
-    var ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); done(); } catch (e) {}
-    document.body.removeChild(ta);
-  }
-}
-</script>
+      function renderAiRecord(card, index) {
+        const json = escapeHTML(JSON.stringify(card));
+        return `
+          <article class="ai-record" id="ai-record-${escapeHTML(card.id)}"
+            itemscope itemtype="https://schema.org/LearningResource"
+            data-card-id="${escapeHTML(card.id)}"
+            data-category="${escapeHTML(card.category)}"
+            data-evidence="${escapeHTML(card.evidenceLevel)}"
+            data-trigger-basis="${escapeHTML(card.triggerBasis)}"
+            data-json="${json}">
+            <header class="record-head">
+              <span class="record-id">record[${index}]</span>
+              <span class="record-type">LearningResource:${escapeHTML(card.id)}</span>
+            </header>
+            <dl>
+              <dt>id:string</dt><dd itemprop="identifier">${escapeHTML(card.id)}</dd>
+              <dt>category:string</dt><dd itemprop="learningResourceType">${escapeHTML(card.category)}</dd>
+              <dt>name:string</dt><dd itemprop="name">${escapeHTML(card.name)}</dd>
+              <dt>definition:string</dt><dd itemprop="description">${escapeHTML(card.definition)}</dd>
+              <dt>rationale:string</dt><dd>${escapeHTML(card.rationale)}</dd>
+              <dt>evidenceLevel:enum</dt><dd>${escapeHTML(card.evidenceLevel)}</dd>
+              <dt>triggerCondition:string</dt><dd>${escapeHTML(card.triggerCondition)}</dd>
+              <dt>triggerBasis:enum</dt><dd>${escapeHTML(card.triggerBasis)}</dd>
+              <dt>sourceLocator:string</dt><dd>${escapeHTML(card.sourceLocator)}</dd>
+            </dl>
+          </article>`;
+      }
+
+      function buildCategoryOptions() {
+        const categories = [...new Set(cards.map((card) => card.category))];
+        categorySelect.insertAdjacentHTML("beforeend", categories.map((category) =>
+          `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`
+        ).join(""));
+      }
+
+      /* ---- 繁简互通检索：繁体输入与全角字符先归一到简体/半角再匹配（卡片数据为简体） ---- */
+      const T2S_PAIRS = "並并亂乱來来個个們们備备傳传傷伤傾倾僅仅價价儀仪優优兒儿內内兩两別别則则劃划動动勻匀區区參参叢丛員员問问啟启單单嚴严圍围圖图報报場场壓压壞坏學学實实寫写將将專专對对導导帶带幾几廣广強强彎弯後后徑径從从復复態态慣惯慶庆憤愤憶忆應应懷怀懼惧戀恋戰战戲戏戶户換换撐撑撲扑擁拥擇择擊击擋挡擔担據据擾扰數数斷断於于時时晝昼書书會会東东柵栅條条棄弃業业極极構构樂乐樓楼標标樣样樹树機机檔档檢检歐欧歡欢歷历殘残殺杀毀毁氣气決决沒没沖冲況况涼凉減减測测湯汤準准溝沟溫温滿满漢汉潑泼潔洁澆浇澤泽澱淀濃浓濕湿濟济濱滨灑洒災灾為为無无煉炼熱热熾炽燈灯燒烧營营爐炉爭争牆墙狀状狹狭猶犹獨独獵猎獻献現现環环產产異异當当發发監监盧卢眾众睜睁矽硅確确碼码磚砖礎础禮礼種种稱称積积穩稳窮穷競竞筆笔節节範范築筑簡简簽签糧粮紀纪約约紋纹納纳純纯紙纸級级細细終终組组結结絕绝絡络給给統统絲丝經经綠绿維维綱纲網网緊紧緒绪線线緣缘縮缩總总績绩繩绳繪绘繫系繼继續续纖纤罰罚義义習习聖圣聯联聰聪聲声職职聽听肅肃脅胁腦脑膽胆臉脸臨临與与舉举舊旧萬万藝艺藥药蘭兰處处虛虚號号蟲虫術术衛卫衝冲補补裝装複复見见規规視视覺觉觀观觸触訂订計计訊讯討讨訓训記记訪访設设許许訴诉診诊証证評评詞词試试詩诗話话該该詳详認认語语誠诚誤误說说調调請请論论謊谎講讲謝谢謹谨證证識识譜谱議议護护譽誉讀读變变讓让豬猪貝贝負负財财責责貴贵買买費费貼贴資资賢贤賣卖質质賴赖購购賽赛贊赞贏赢車车軌轨軍军軟软軸轴較较輛辆輝辉輪轮輯辑轉转農农這这連连進进運运過过達达違违遠远適适遲迟選选還还邊边邏逻郵邮鄉乡釋释針针鈴铃銀银銅铜銷销錄录錢钱錯错鍋锅鍵键鎖锁鎮镇鏈链鐵铁鑰钥鑽钻長长閉闭開开間间閘闸閱阅闖闯關关陣阵陳陈陽阳際际隨随險险雙双雜杂雞鸡離离難难雲云電电靜静響响項项順顺須须頌颂預预領领頭头頻频題题額额顏颜類类顧顾顯显風风飛飞飲饮養养餓饿饋馈饑饥馬马駕驾騎骑驗验體体麼么點点黨党齊齐齒齿齡龄龍龙";
+      const T2S = Object.create(null);
+      for (let i = 0; i < T2S_PAIRS.length; i += 2) T2S[T2S_PAIRS[i]] = T2S_PAIRS[i + 1];
+
+      const normalize = (text) => String(text)
+        .replace(/[\uFF01-\uFF5E]/g, (character) => String.fromCharCode(character.charCodeAt(0) - 0xFEE0))
+        .replace(/\u3000/g, " ")
+        .replace(/[\s\S]/g, (character) => T2S[character] || character)
+        .trim()
+        .toLocaleLowerCase("zh-CN");
+
+      const searchText = new Map();
+      cards.forEach((card) => searchText.set(card, normalize(Object.values(card).join(" "))));
+
+      function searchableText(card) {
+        return searchText.get(card);
+      }
+
+      function renderPagination(totalPages) {
+        if (matchedCards.length === 0) {
+          pagination.hidden = true;
+          return;
+        }
+        pagination.hidden = false;
+        pagePrev.disabled = currentPage <= 1;
+        pageNext.disabled = currentPage >= totalPages;
+
+        /* 页码序列：≤9 页全列；更多时首尾 + 当前页窗口 + 省略号 */
+        const pageList = [];
+        if (totalPages <= 9) {
+          for (let page = 1; page <= totalPages; page += 1) pageList.push(page);
+        } else {
+          pageList.push(1);
+          const from = Math.max(2, currentPage - 1);
+          const to = Math.min(totalPages - 1, currentPage + 1);
+          if (from > 2) pageList.push("…");
+          for (let page = from; page <= to; page += 1) pageList.push(page);
+          if (to < totalPages - 1) pageList.push("…");
+          pageList.push(totalPages);
+        }
+        pageNumbers.innerHTML = pageList.map((item) => item === "…"
+          ? `<span class="page-ellipsis" aria-hidden="true">…</span>`
+          : `<button class="page-btn${item === currentPage ? " is-current" : ""}" type="button"
+               data-page="${item}"${item === currentPage ? ' aria-current="page"' : ""}
+               aria-label="第 ${item} 页">${item}</button>`
+        ).join("");
+      }
+
+      function goToPage(page) {
+        currentPage = page;
+        applyFilters(true);
+        dualGrid.scrollIntoView({ block: "start" });   /* 翻页后回卡片区顶（scroll-margin 避开吸顶条） */
+      }
+
+      function applyFilters(keepPage) {
+        const query = normalize(searchInput.value);
+        const category = categorySelect.value;
+        const evidence = evidenceSelect.value;
+        if (!keepPage) currentPage = 1;
+
+        matchedCards = cards.filter((card) =>
+          (!query || searchableText(card).includes(query)) &&
+          (!category || card.category === category) &&
+          (!evidence || card.evidenceLevel === evidence)
+        );
+
+        const visibleCount = matchedCards.length;
+        const totalPages = Math.max(1, Math.ceil(visibleCount / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;   /* 筛选收窄时页码越界回退 */
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const onPage = new Set(matchedCards.slice(start, start + PAGE_SIZE).map((card) => card.id));
+
+        cards.forEach((card) => {
+          const humanCard = document.getElementById(`human-card-${card.id}`);
+          const aiRecord = document.getElementById(`ai-record-${card.id}`);
+          humanCard.hidden = !onPage.has(card.id);
+          aiRecord.hidden = !onPage.has(card.id);
+        });
+
+        humanCount.textContent = `${visibleCount} 条`;
+        aiCount.textContent = `${visibleCount} records`;
+        humanEmpty.classList.toggle("is-visible", visibleCount === 0);
+        aiEmpty.classList.toggle("is-visible", visibleCount === 0);
+        renderPagination(totalPages);
+        alignRows();
+      }
+
+      /* ---- 左右两栏逐行一一对齐（2026-11-03 定）：首行同起点、同排左右行同高 ---- */
+      const sideBySide = () => window.matchMedia("(min-width: 1181px)").matches;
+
+      function alignRows() {
+        const humanRows = [...humanList.children].filter((el) => !el.hidden);
+        const aiRows = [...aiList.children].filter((el) => !el.hidden);
+        [...humanRows, ...aiRows].forEach((el) => { el.style.minHeight = ""; });
+        humanList.style.paddingTop = "";
+        aiList.style.paddingTop = "";
+        if (!sideBySide()) return;
+
+        /* 首行起点取齐：右栏多一条 ai-toolbar，把较高一侧垫到同一起点 */
+        const topDiff = aiList.getBoundingClientRect().top - humanList.getBoundingClientRect().top;
+        const padBy = (list, extra) => {
+          const base = parseFloat(getComputedStyle(list).paddingTop) || 0;
+          list.style.paddingTop = (base + extra) + "px";
+        };
+        if (topDiff > 0) padBy(humanList, topDiff);
+        else if (topDiff < 0) padBy(aiList, -topDiff);
+
+        /* 同排左右行同高 → 两列逐行一一对齐 */
+        const rows = Math.min(humanRows.length, aiRows.length);
+        for (let i = 0; i < rows; i += 1) {
+          const height = Math.max(humanRows[i].offsetHeight, aiRows[i].offsetHeight);
+          humanRows[i].style.minHeight = height + "px";
+          aiRows[i].style.minHeight = height + "px";
+        }
+      }
+
+      let resizeFrame = 0;
+      window.addEventListener("resize", () => {
+        cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(alignRows);
+      });
+
+      humanList.innerHTML = cards.map(renderHumanCard).join("");
+      aiList.innerHTML = cards.map(renderAiRecord).join("");
+      buildCategoryOptions();
+
+      searchInput.addEventListener("input", () => applyFilters());
+      categorySelect.addEventListener("change", () => applyFilters());
+      evidenceSelect.addEventListener("change", () => applyFilters());
+      resetButton.addEventListener("click", () => {
+        searchInput.value = "";
+        categorySelect.value = "";
+        evidenceSelect.value = "";
+        applyFilters();
+        searchInput.focus();
+      });
+
+      /* ---- 翻页：点页码跳页 / 上一页 / 下一页（左右两栏同步） ---- */
+      pagePrev.addEventListener("click", () => {
+        if (currentPage > 1) goToPage(currentPage - 1);
+      });
+      pageNext.addEventListener("click", () => {
+        const totalPages = Math.max(1, Math.ceil(matchedCards.length / PAGE_SIZE));
+        if (currentPage < totalPages) goToPage(currentPage + 1);
+      });
+      pageNumbers.addEventListener("click", (event) => {
+        const target = event.target.closest("button[data-page]");
+        if (!target) return;
+        const page = Number(target.dataset.page);
+        if (page !== currentPage) goToPage(page);
+      });
+
+      /* ---- 页内「24 条」类数字由数据长度注入，换卡包不用再手改文案 ---- */
+      document.querySelectorAll("[data-card-total]").forEach((node) => {
+        node.textContent = String(cards.length);
+      });
+
+      window.XINKA_CARDS = Object.freeze(cards.map(Object.freeze));
+      applyFilters();
+    })();
+  </script>
+  <div style="text-align:center;padding:1.7rem 1rem 2.1rem;color:#8b97a6;font-size:.95rem;letter-spacing:.06em">闭门信箱：<a href="mailto:hi@xinka.ai" style="color:#4fb3a6;text-decoration:none;border-bottom:1px solid rgba(79,179,166,.45)">hi@xinka.ai</a></div>
 </body>
 </html>
